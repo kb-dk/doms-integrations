@@ -25,7 +25,7 @@
   ~ under the License.
   -->
 
-<project name="summa" basedir=".">
+<project name="summa-integration" basedir=".">
 
     <property name="global.dir" value="${basedir}/../.."/>
 
