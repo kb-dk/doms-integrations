@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.util.List;
 
 import dk.statsbiblioteket.summa.common.Record;
+import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.ReadableStorage;
 
@@ -38,6 +39,13 @@ import dk.statsbiblioteket.summa.storage.api.ReadableStorage;
  */
 public class DOMSReadableStorage implements ReadableStorage {
 
+    private final Configuration configuration;
+    private DOMSWSClient domsClient;
+
+    public DOMSReadableStorage(Configuration configuration) {
+	this.configuration = configuration;
+    }
+    
     /* (non-Javadoc)
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getModificationTime(java.lang.String)
      */
@@ -84,6 +92,4 @@ public class DOMSReadableStorage implements ReadableStorage {
 	// TODO Auto-generated method stub
 	return null;
     }
-
-    
 }
