@@ -23,7 +23,8 @@
  * KIND, either express or implied.  See the License for the
  * specific language governing permissions and limitations
  * under the License.
- */package dk.statsbiblioteket.doms.integration.summa;
+ */
+package dk.statsbiblioteket.doms.integration.summa;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,23 +35,37 @@ import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.ReadableStorage;
 
 /**
- * @author tsh
- *
+ * @author &lt;tsh@statsbiblioteket.dk&gt;
+ * 
  */
 public class DOMSReadableStorage implements ReadableStorage {
 
     private final Configuration configuration;
     private DOMSWSClient domsClient;
 
+    /**
+     * 
+     * @param configuration
+     */
     public DOMSReadableStorage(Configuration configuration) {
 	this.configuration = configuration;
     }
-    
-    /* (non-Javadoc)
+
+    /**
+     * Get the time-stamp for when the latest modification occurred in the DOMS
+     * collection identified by <code>base</code>. Please see the interface
+     * documentation for further details.
+     * 
+     * @param base
+     *            ID of the collection to read from. I.e. the PID of the DOMS
+     *            collection.
+     * @return The time-stamp in milliseconds for the latest modification made
+     *         in the collection identified by <code>base</code>.
+     * 
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getModificationTime(java.lang.String)
      */
     @Override
-    public long getModificationTime(String arg0) throws IOException {
+    public long getModificationTime(String base) throws IOException {
 	// TODO Auto-generated method stub
 	return 0;
     }
@@ -59,8 +74,8 @@ public class DOMSReadableStorage implements ReadableStorage {
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getRecordsModifiedAfter(long, java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)
      */
     @Override
-    public long getRecordsModifiedAfter(long arg0, String arg1,
-	    QueryOptions arg2) throws IOException {
+    public long getRecordsModifiedAfter(long time, String base,
+	    QueryOptions options) throws IOException {
 	// TODO Auto-generated method stub
 	return 0;
     }
@@ -82,7 +97,7 @@ public class DOMSReadableStorage implements ReadableStorage {
 
     @Override
     public List<Record> getRecords(List<String> arg0, QueryOptions arg1)
-            throws IOException {
+	    throws IOException {
 	// TODO Auto-generated method stub
 	return null;
     }
