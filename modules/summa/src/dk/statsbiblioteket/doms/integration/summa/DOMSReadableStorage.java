@@ -27,6 +27,8 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.List;
 
 import dk.statsbiblioteket.summa.common.Record;
@@ -41,14 +43,17 @@ import dk.statsbiblioteket.summa.storage.api.ReadableStorage;
 public class DOMSReadableStorage implements ReadableStorage {
 
     private final Configuration configuration;
-    private DOMSWSClient domsClient;
+    private final DOMSWSClient domsClient;
 
     /**
      * 
      * @param configuration
+     * @throws ConfigurationException
      */
-    public DOMSReadableStorage(Configuration configuration) {
+    public DOMSReadableStorage(Configuration configuration)
+	    throws ConfigurationException {
 	this.configuration = configuration;
+	domsClient = domsLogin(configuration);
     }
 
     /**
@@ -107,4 +112,42 @@ public class DOMSReadableStorage implements ReadableStorage {
 	// TODO Auto-generated method stub
 	return null;
     }
+
+    /**
+     * 
+     * @param configuration
+     * @return
+     * @throws ConfigurationException
+     */
+    private DOMSWSClient domsLogin(Configuration configuration)
+	    throws ConfigurationException {
+
+	final DOMSWSClient newDomsClient = new DOMSWSClient();
+	final String userName = configuration
+	        .getString(ConfigurationKeys.DOMS_USER_NAME);
+
+	final String password = configuration
+	        .getString(ConfigurationKeys.DOMS_PASSWORD);
+
+	if (userName == null || password == null) {
+	    throw new ConfigurationException(
+		    "Invalid DOMS user credentials in the configuration. username = '"
+		            + userName + "'  password = '" + password + "'");
+	}
+
+	final String domsWSEndpointURL = configuration
+	        .getString(ConfigurationKeys.DOMS_API_WEBSERVICE_URL);
+	try {
+	    final URL domsWSAPIEndpoint = new URL(domsWSEndpointURL);
+	    newDomsClient.login(domsWSAPIEndpoint, userName, password);
+	    return newDomsClient;
+	} catch (MalformedURLException malformedURLException) {
+	    throw new ConfigurationException(
+		    "Failed connecting to the DOMS API webservice with the URL"
+		            + " (" + domsWSEndpointURL
+		            + ") specified in the configuration.",
+		    malformedURLException);
+	}
+    }
+
 }

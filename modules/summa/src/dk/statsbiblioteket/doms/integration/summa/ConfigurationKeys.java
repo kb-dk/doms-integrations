@@ -37,6 +37,9 @@ public class ConfigurationKeys {
      * <p/>
      * TODO: STORAGE_BASE_ID is probably too generic - refactoring may be relevant.
      */
-    public static final String COLLECTION_BASE_ID = "COLLECTION_BASE_ID";
+    public static final String COLLECTION_BASE_ID = "collectionBaseID";
+    public static final String DOMS_USER_NAME = "DOMSUserName";
+    public static final String DOMS_PASSWORD = "DOMSPassword";
+    public static final String DOMS_API_WEBSERVICE_URL = "DOMSWebserviceURL";
 
 }
