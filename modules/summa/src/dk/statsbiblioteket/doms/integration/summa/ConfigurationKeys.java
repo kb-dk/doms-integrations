@@ -28,18 +28,21 @@ package dk.statsbiblioteket.doms.integration.summa;
 
 /**
  * @author &lt;tsh@statsbiblioteket.dk&gt;
- *
+ * 
  */
 public class ConfigurationKeys {
 
     /**
      * Storage &quot;base&quot; for the radio-tv collection.
      * <p/>
-     * TODO: STORAGE_BASE_ID is probably too generic - refactoring may be relevant.
+     * TODO: STORAGE_BASE_ID is probably too generic - refactoring may be
+     * relevant.
      */
+    public static final String ACCESSIBLE_COLLECTION_BASES = "accessibleCollectionBases";
     public static final String COLLECTION_BASE_ID = "collectionBaseID";
     public static final String DOMS_USER_NAME = "DOMSUserName";
     public static final String DOMS_PASSWORD = "DOMSPassword";
     public static final String DOMS_API_WEBSERVICE_URL = "DOMSWebserviceURL";
-
+    public static final String COLLECTION_ID = "collectionID";
+    public static final String COLLECTION_ENTRY_CONTENT_MODEL_ID = "collectionEntryContentModelID";
 }

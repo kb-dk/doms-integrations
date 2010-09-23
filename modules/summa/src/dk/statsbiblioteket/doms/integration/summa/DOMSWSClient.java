@@ -286,4 +286,27 @@ public class DOMSWSClient {
 		    + pidsToPublish, exception);
 	}
     }
+
+    /**
+     * Get a time-stamp for when the latest change was made to the collection
+     * identified by the PID specified by <code>collectionPID</code>.
+     * 
+     * TODO: can we say anything about the timezone of the time-stamp
+     * 
+     * @param collectionPID
+     *            PID of the collection to get the modification time-stamp for.
+     * @return the time-stamp in milliseconds for the latest modification.
+     * @throws ServerError if the time-stamp cannot be retrieved.
+     */
+    public long getModificationTime(String collectionPID) throws ServerError {
+	try {
+	    //TODO: Are PIDs not always legal URIs? If so, then change from String to URI!
+	    // domsAPI.getModificationTime(collectionPID);
+	    return 0;
+	} catch (Exception exception) {
+	    throw new ServerError(
+		    "Failed retrieving the modification time-stamp for the collection with this PID: "
+		            + collectionPID, exception);
+	}
+    }
 }

@@ -28,11 +28,16 @@ package dk.statsbiblioteket.doms.integration.summa;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
+import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.ReadableStorage;
 
@@ -44,6 +49,8 @@ public class DOMSReadableStorage implements ReadableStorage {
 
     private final Configuration configuration;
     private final DOMSWSClient domsClient;
+    private final Map<String, URI> baseCollectionID;
+    private final Map<String, URI> baseEntryContentModelID;
 
     /**
      * 
@@ -53,6 +60,9 @@ public class DOMSReadableStorage implements ReadableStorage {
     public DOMSReadableStorage(Configuration configuration)
 	    throws ConfigurationException {
 	this.configuration = configuration;
+	baseCollectionID = new HashMap<String, URI>();
+	baseEntryContentModelID = new HashMap<String, URI>();
+	initIDMaps(configuration, baseCollectionID, baseEntryContentModelID);
 	domsClient = domsLogin(configuration);
     }
 
@@ -71,8 +81,14 @@ public class DOMSReadableStorage implements ReadableStorage {
      */
     @Override
     public long getModificationTime(String base) throws IOException {
-	// TODO Auto-generated method stub
-	return 0;
+	try {
+	    final String collectionPID = baseCollectionID.get(base).toString();
+	    return domsClient.getModificationTime(collectionPID);
+	} catch (Exception exception) {
+	    throw new IOException(
+		    "Failed retrieving the modification time for base: " + base,
+		    exception);
+	}
     }
 
     /* (non-Javadoc)
@@ -103,8 +119,7 @@ public class DOMSReadableStorage implements ReadableStorage {
     @Override
     public List<Record> getRecords(List<String> arg0, QueryOptions arg1)
 	    throws IOException {
-	// TODO Auto-generated method stub
-	return null;
+	return new ArrayList<Record>();
     }
 
     @Override
@@ -122,7 +137,6 @@ public class DOMSReadableStorage implements ReadableStorage {
     private DOMSWSClient domsLogin(Configuration configuration)
 	    throws ConfigurationException {
 
-	final DOMSWSClient newDomsClient = new DOMSWSClient();
 	final String userName = configuration
 	        .getString(ConfigurationKeys.DOMS_USER_NAME);
 
@@ -138,6 +152,7 @@ public class DOMSReadableStorage implements ReadableStorage {
 	final String domsWSEndpointURL = configuration
 	        .getString(ConfigurationKeys.DOMS_API_WEBSERVICE_URL);
 	try {
+	    final DOMSWSClient newDomsClient = new DOMSWSClient();
 	    final URL domsWSAPIEndpoint = new URL(domsWSEndpointURL);
 	    newDomsClient.login(domsWSAPIEndpoint, userName, password);
 	    return newDomsClient;
@@ -147,6 +162,36 @@ public class DOMSReadableStorage implements ReadableStorage {
 		            + " (" + domsWSEndpointURL
 		            + ") specified in the configuration.",
 		    malformedURLException);
+	}
+    }
+
+    private void initIDMaps(Configuration configuration,
+	    Map<String, URI> baseCollectionIDMap,
+	    Map<String, URI> baseEntryContentModelIDMap)
+	    throws ConfigurationException {
+	String baseID = null;
+	try {
+	    final List<Configuration> baseConfigurations = configuration
+		    .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
+
+	    for (Configuration subConfiguration : baseConfigurations) {
+		baseID = subConfiguration
+		        .getString(ConfigurationKeys.COLLECTION_BASE_ID);
+
+		final String collectionID_URI = subConfiguration
+		        .getString(ConfigurationKeys.COLLECTION_ID);
+		baseCollectionIDMap.put(baseID, new URI(collectionID_URI));
+
+		final String collectionContentModelURI = subConfiguration
+		        .getString(ConfigurationKeys.COLLECTION_ENTRY_CONTENT_MODEL_ID);
+		baseEntryContentModelIDMap.put(baseID, new URI(
+		        collectionContentModelURI));
+	    }
+	} catch (Exception exception) {
+	    throw new ConfigurationException(
+		    "Could not retrieve the collection base (base ID = '"
+		            + baseID + "' configuration information.",
+		    exception);
 	}
     }
 

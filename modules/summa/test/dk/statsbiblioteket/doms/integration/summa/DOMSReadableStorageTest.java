@@ -4,11 +4,11 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
@@ -19,7 +19,6 @@ import org.junit.Test;
 
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
-import dk.statsbiblioteket.summa.common.configuration.storage.FileStorage;
 
 /**
  * @author tsh
@@ -28,6 +27,7 @@ import dk.statsbiblioteket.summa.common.configuration.storage.FileStorage;
 public class DOMSReadableStorageTest {
 
     private static final String TEST_CONFIGURATION_XML = "./config/radioTVTestConfiguration.xml";
+    private static final String TEST_COLLECTION_BASE_ID = "radioTVCollection";
     private DOMSReadableStorage storage;
     private final Configuration testConfiguration;
 
@@ -50,29 +50,6 @@ public class DOMSReadableStorageTest {
     public void tearDown() throws Exception {
     }
 
-    // FIXME! This test is a fake for generation of the test configuration and
-    // thus it should be removed when the configuration is complete.
-    @Test
-    public void writeTestConfig() {
-	try {
-	    FileStorage configurationStorage = new FileStorage(new File(
-		    TEST_CONFIGURATION_XML));
-	    Configuration configuration = new Configuration(
-		    configurationStorage);
-	    configuration.set(ConfigurationKeys.COLLECTION_BASE_ID,
-		    "doms:RadioTV_Collection");
-	    // Don't worry, be happy....
-	    assertTrue(true);
-	} catch (Exception exception) {
-	    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-	    final PrintStream failureMessage = new PrintStream(bos);
-	    failureMessage.print("testNextLong(): Caught exception: ");
-	    exception.printStackTrace(failureMessage);
-	    failureMessage.flush();
-	    fail(bos.toString());
-	}
-    }
-
     /**
      * Test method for
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getModificationTime(java.lang.String)}
@@ -81,10 +58,14 @@ public class DOMSReadableStorageTest {
     @Test
     public void testGetModificationTime() {
 	try {
+
+	    final List<Configuration> baseConfigurations = testConfiguration
+		    .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
+	    final String baseID = baseConfigurations.get(0).getString(
+		    ConfigurationKeys.COLLECTION_BASE_ID);
 	    assertTrue(
 		    "The latest modification time of the collection was implausible old.",
-		    storage.getModificationTime(testConfiguration
-		            .getString(ConfigurationKeys.COLLECTION_BASE_ID)) == 0);
+		    storage.getModificationTime(baseID) == 0);
 	} catch (Exception exception) {
 	    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 	    final PrintStream failureMessage = new PrintStream(bos);
@@ -107,8 +88,11 @@ public class DOMSReadableStorageTest {
 	try {
 	    // Just trash the returned key. There is no way to validate it
 	    // anyway.
-	    storage.getRecordsModifiedAfter(0, testConfiguration
-		    .getString(ConfigurationKeys.COLLECTION_BASE_ID), null);
+	    final List<Configuration> baseConfigurations = testConfiguration
+		    .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
+	    final String baseID = baseConfigurations.get(0).getString(
+		    ConfigurationKeys.COLLECTION_BASE_ID);
+	    storage.getRecordsModifiedAfter(0, baseID, null);
 	    assertTrue(true);
 	} catch (Exception exception) {
 	    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -177,7 +161,7 @@ public class DOMSReadableStorageTest {
 		    "doms:3" };
 	    List<Record> records = storage.getRecords(Arrays.asList(pidList),
 		    null);
-	    assertNull(records);
+	    assertNotNull(records);
 	    assertTrue(records.isEmpty());
 	    // TODO: Improve this test.
 	} catch (Exception exception) {
