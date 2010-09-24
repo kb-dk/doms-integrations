@@ -32,12 +32,15 @@ import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
+import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
+import dk.statsbiblioteket.doms.centralWebservice.TrackerRecord;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
-import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.ReadableStorage;
 
@@ -49,8 +52,11 @@ public class DOMSReadableStorage implements ReadableStorage {
 
     private final Configuration configuration;
     private final DOMSWSClient domsClient;
-    private final Map<String, URI> baseCollectionID;
-    private final Map<String, URI> baseEntryContentModelID;
+    private final Map<String, URI> baseCollectionPIDMap;
+    private final Map<String, URI> baseEntryContentModelPIDMap;
+    private final Map<String, String> baseViewIDMap;
+
+    private final Map<Long, Iterator<Record>> recordIterators;
 
     /**
      * 
@@ -60,9 +66,13 @@ public class DOMSReadableStorage implements ReadableStorage {
     public DOMSReadableStorage(Configuration configuration)
 	    throws ConfigurationException {
 	this.configuration = configuration;
-	baseCollectionID = new HashMap<String, URI>();
-	baseEntryContentModelID = new HashMap<String, URI>();
-	initIDMaps(configuration, baseCollectionID, baseEntryContentModelID);
+	baseCollectionPIDMap = new HashMap<String, URI>();
+	baseEntryContentModelPIDMap = new HashMap<String, URI>();
+	baseViewIDMap = new HashMap<String, String>();
+	recordIterators = new TreeMap<Long, Iterator<Record>>();
+
+	initIDMaps(configuration, baseCollectionPIDMap,
+	        baseEntryContentModelPIDMap, baseViewIDMap);
 	domsClient = domsLogin(configuration);
     }
 
@@ -82,8 +92,12 @@ public class DOMSReadableStorage implements ReadableStorage {
     @Override
     public long getModificationTime(String base) throws IOException {
 	try {
-	    final String collectionPID = baseCollectionID.get(base).toString();
-	    return domsClient.getModificationTime(collectionPID);
+	    final URI collectionPID = baseCollectionPIDMap.get(base);
+	    final String viewID = baseViewIDMap.get(base);
+	    final URI entryContentModelPID = baseEntryContentModelPIDMap
+		    .get(base);
+	    return domsClient.getModificationTime(collectionPID, viewID,
+		    entryContentModelPID);
 	} catch (Exception exception) {
 	    throw new IOException(
 		    "Failed retrieving the modification time for base: " + base,
@@ -95,10 +109,49 @@ public class DOMSReadableStorage implements ReadableStorage {
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getRecordsModifiedAfter(long, java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)
      */
     @Override
-    public long getRecordsModifiedAfter(long time, String base,
+    public long getRecordsModifiedAfter(long timeStamp, String base,
 	    QueryOptions options) throws IOException {
-	// TODO Auto-generated method stub
-	return 0;
+
+	try {
+	    final URI collectionPID = baseCollectionPIDMap.get(base);
+	    final String viewID = baseViewIDMap.get(base);
+	    final URI entryContentModelPID = baseEntryContentModelPIDMap
+		    .get(base);
+
+	    // Remember!!! TrackerRecord.getPid() = PID of the entry object
+
+	    List<RecordDescription> recordDescriptions = domsClient
+		    .getModifiedEntryObjects(collectionPID, viewID,
+		            entryContentModelPID, timeStamp, "Published");// FIXME!
+									  // Hard-coded
+									  // state.
+									  // What
+									  // about
+									  // an
+									  // enum?
+
+	    // FIXME! Clarify how QueryOptions should be handled and implement
+	    // filter-magic here...
+
+	    // Trivial first-shot record and iterator construction.
+	    final ArrayList<Record> modifiedRecords = new ArrayList<Record>();
+	    for (RecordDescription recordDescription : recordDescriptions) {
+		final URI modifiedEntryObjectPID = new URI(recordDescription
+		        .getPid());
+		final byte data[] = domsClient.getViewBundle(
+		        modifiedEntryObjectPID, viewID).getBytes();
+		final Record newRecord = new Record(modifiedEntryObjectPID
+		        .toString(), base, data);
+		modifiedRecords.add(newRecord);
+	    }
+
+	    return registerIterator(modifiedRecords.iterator());
+	} catch (Exception exception) {
+	    throw new IOException("Failed retrieving records from base (base="
+		    + base + ") modified after time-stamp (timeStamp="
+		    + timeStamp + "), using QueryOptions: " + options,
+		    exception);
+	}
     }
 
     /* (non-Javadoc)
@@ -166,9 +219,9 @@ public class DOMSReadableStorage implements ReadableStorage {
     }
 
     private void initIDMaps(Configuration configuration,
-	    Map<String, URI> baseCollectionIDMap,
-	    Map<String, URI> baseEntryContentModelIDMap)
-	    throws ConfigurationException {
+	    Map<String, URI> baseToCollectionPIDMap,
+	    Map<String, URI> baseToEntryContentModelPIDMap,
+	    Map<String, String> baseToViewIDMap) throws ConfigurationException {
 	String baseID = null;
 	try {
 	    final List<Configuration> baseConfigurations = configuration
@@ -180,12 +233,16 @@ public class DOMSReadableStorage implements ReadableStorage {
 
 		final String collectionID_URI = subConfiguration
 		        .getString(ConfigurationKeys.COLLECTION_ID);
-		baseCollectionIDMap.put(baseID, new URI(collectionID_URI));
+		baseToCollectionPIDMap.put(baseID, new URI(collectionID_URI));
 
 		final String collectionContentModelURI = subConfiguration
 		        .getString(ConfigurationKeys.COLLECTION_ENTRY_CONTENT_MODEL_ID);
-		baseEntryContentModelIDMap.put(baseID, new URI(
+		baseToEntryContentModelPIDMap.put(baseID, new URI(
 		        collectionContentModelURI));
+
+		final String baseViewID = subConfiguration
+		        .getString(ConfigurationKeys.BASE_VIEW_ID);
+		baseToViewIDMap.put(baseID, baseViewID);
 	    }
 	} catch (Exception exception) {
 	    throw new ConfigurationException(
@@ -195,4 +252,26 @@ public class DOMSReadableStorage implements ReadableStorage {
 	}
     }
 
+    /**
+     * Register <code>iterator</code> in the internal iterator map and return
+     * the iterator key.
+     * 
+     * @param iterator
+     * @return
+     */
+    private synchronized long registerIterator(Iterator<Record> iterator)
+	    throws Exception {
+	long iteratorKey = Math.round(Long.MAX_VALUE * Math.random());
+	long emergencyBrake = 0;
+	while (recordIterators.containsKey(iteratorKey)) {
+	    iteratorKey = Math.round(Long.MAX_VALUE * Math.random());
+	    emergencyBrake++;
+	    if (emergencyBrake == 0) {
+		throw new Exception("Unable to produce an iterator key.");
+	    }
+	}
+	// FIXME! Watch out! Currently, nobody removes the iterators again!
+	recordIterators.put(iteratorKey, iterator);
+	return iteratorKey;
+    }
 }

@@ -3,8 +3,9 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
-import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -19,6 +20,7 @@ import org.junit.Test;
 
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
+import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 
 /**
  * @author tsh
@@ -26,8 +28,7 @@ import dk.statsbiblioteket.summa.common.configuration.Configuration;
  */
 public class DOMSReadableStorageTest {
 
-    private static final String TEST_CONFIGURATION_XML = "./config/radioTVTestConfiguration.xml";
-    private static final String TEST_COLLECTION_BASE_ID = "radioTVCollection";
+    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "./config/radioTVTestConfiguration.xml";
     private DOMSReadableStorage storage;
     private final Configuration testConfiguration;
 
@@ -59,13 +60,11 @@ public class DOMSReadableStorageTest {
     public void testGetModificationTime() {
 	try {
 
-	    final List<Configuration> baseConfigurations = testConfiguration
-		    .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
-	    final String baseID = baseConfigurations.get(0).getString(
-		    ConfigurationKeys.COLLECTION_BASE_ID);
-	    assertTrue(
-		    "The latest modification time of the collection was implausible old.",
-		    storage.getModificationTime(baseID) == 0);
+	    final String baseID = getTestBaseID();
+
+	    assertTrue("The latest modification time of the collection (base='"
+		    + baseID + "') was implausible old.", storage
+		    .getModificationTime(baseID) == 0);
 	} catch (Exception exception) {
 	    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 	    final PrintStream failureMessage = new PrintStream(bos);
@@ -86,14 +85,15 @@ public class DOMSReadableStorageTest {
     @Test
     public void testGetRecordsModifiedAfter() {
 	try {
-	    // Just trash the returned key. There is no way to validate it
-	    // anyway.
-	    final List<Configuration> baseConfigurations = testConfiguration
-		    .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
-	    final String baseID = baseConfigurations.get(0).getString(
-		    ConfigurationKeys.COLLECTION_BASE_ID);
-	    storage.getRecordsModifiedAfter(0, baseID, null);
-	    assertTrue(true);
+	    final String baseID = getTestBaseID();
+	    final long SINCE_ANCIENT_TIMES = 0;
+	    final long iteratorKey = storage.getRecordsModifiedAfter(
+		    SINCE_ANCIENT_TIMES, baseID, null);
+	    // TODO: Test various QueryOptions.
+
+	    // Verify that the iterator key works and returns something.
+	    assertNull(storage.next(iteratorKey));
+
 	} catch (Exception exception) {
 	    final ByteArrayOutputStream bos = new ByteArrayOutputStream();
 	    final PrintStream failureMessage = new PrintStream(bos);
@@ -197,6 +197,21 @@ public class DOMSReadableStorageTest {
     }
 
     private Configuration getConfiguration() {
-	return Configuration.load(TEST_CONFIGURATION_XML);
+	return Configuration.load(TEST_CONFIGURATION_XML_FILE_PATH);
     }
+
+    private String getTestBaseID()
+	    throws SubConfigurationsNotSupportedException {
+	final List<Configuration> baseConfigurations = testConfiguration
+	        .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
+
+	assertFalse(
+	        "There are no collection base definitions in the configuration file.",
+	        baseConfigurations.isEmpty());
+
+	// Just use the first collection base information element.
+	return baseConfigurations.get(0).getString(
+	        ConfigurationKeys.COLLECTION_BASE_ID);
+    }
+
 }

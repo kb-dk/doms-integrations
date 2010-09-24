@@ -27,6 +27,7 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 import java.io.ByteArrayInputStream;
+import java.net.URI;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +41,9 @@ import org.w3c.dom.Document;
 
 import dk.statsbiblioteket.doms.centralWebservice.CentralWebservice;
 import dk.statsbiblioteket.doms.centralWebservice.CentralWebserviceService;
+import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
+import dk.statsbiblioteket.doms.centralWebservice.TrackerRecord;
+import dk.statsbiblioteket.doms.centralWebservice.ViewBundle;
 import dk.statsbiblioteket.util.xml.DOM;
 
 /**
@@ -288,25 +292,85 @@ public class DOMSWSClient {
     }
 
     /**
-     * Get a time-stamp for when the latest change was made to the collection
-     * identified by the PID specified by <code>collectionPID</code>.
+     * Get a time-stamp for when the latest change was made to any of the
+     * objects associated with the view, specified by <code>viewID</code>, in
+     * the collection identified by <code>collectionPID</code>. The
+     * <code>entryContentModelPID</code> identifies the root element in the data
+     * model graph which describes the relevant objects to query for
+     * modifications.
      * 
      * TODO: can we say anything about the timezone of the time-stamp
      * 
      * @param collectionPID
      *            PID of the collection to get the modification time-stamp for.
+     * @param viewID
+     *            ID of the view which any modified object must be a part of.
+     * @param entryContentModelPID
+     *            PID of the entry content model for the query.
      * @return the time-stamp in milliseconds for the latest modification.
-     * @throws ServerError if the time-stamp cannot be retrieved.
+     * @throws ServerError
+     *             if the time-stamp cannot be retrieved.
      */
-    public long getModificationTime(String collectionPID) throws ServerError {
+    public long getModificationTime(URI collectionPID, String viewID,
+	    URI entryContentModelPID) throws ServerError {
 	try {
-	    //TODO: Are PIDs not always legal URIs? If so, then change from String to URI!
-	    // domsAPI.getModificationTime(collectionPID);
-	    return 0;
+	    System.out.println("DOMS client invoked with: collectionPID="
+		    + collectionPID + "  viewID=" + viewID
+		    + "  entryContentModelPID=" + entryContentModelPID);
+	    return domsAPI.getLatestModified(collectionPID.toString(), viewID,
+		    entryContentModelPID.toString());
+
 	} catch (Exception exception) {
 	    throw new ServerError(
 		    "Failed retrieving the modification time-stamp for the collection with this PID: "
 		            + collectionPID, exception);
+	}
+    }
+
+    /**
+     * Get PIDs and stuff for all entry objects associated with any modified object..... and stuff...
+     * 
+     * FIXME! objectState should probably not be a string.
+     * 
+     * @param collectionPID
+     * @param viewID
+     * @param entryContentModelPID
+     * @param timeStamp
+     * @return
+     * @throws ServerError
+     */
+    public List<RecordDescription> getModifiedEntryObjects(URI collectionPID,
+	    String viewID, URI entryContentModelPID, long timeStamp, String objectState)
+	    throws ServerError {
+	try {
+
+	    return domsAPI.getIDsModified(timeStamp, collectionPID.toString(),
+		    viewID, entryContentModelPID.toString(), objectState);
+	} catch (Exception exception) {
+	    throw new ServerError("Failed retrieving objects (collectionPID="
+		    + collectionPID + ") associated with the specified view "
+		    + "(viewID=" + viewID + ") and entry content model ("
+		    + entryContentModelPID + "), modified later than the "
+		    + "specified time-stamp (" + timeStamp + ").", exception);
+	}
+    }
+
+    /**
+     * 
+     * @param entryObjectPID
+     * @param viewID
+     * @return
+     * @throws ServerError
+     */
+    public String getViewBundle(URI entryObjectPID, String viewID) throws ServerError {
+	try {
+	    ViewBundle viewBundle = domsAPI.getViewBundle(entryObjectPID.toString(),
+		    viewID);
+	    return viewBundle.getContents();
+	} catch (Exception exception) {
+	    throw new ServerError("Failed retrieving the view record (viewID="
+		    + viewID + ") containing the specified object (objectPID="
+		    + entryObjectPID + ").", exception);
 	}
     }
 }

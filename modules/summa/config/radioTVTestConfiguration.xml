@@ -1,8 +1,4 @@
 <xproperties>
-	<!--
-		summarise.debug must be either "true" or "false" in order to use this
-		config. This comtrol dumping of a sample of the records.
-	-->
 	<xproperties>
 		<entry>
 			<key>DOMSUserName</key>
@@ -14,12 +10,13 @@
 		</entry>
 		<entry>
 			<key>DOMSWebserviceURL</key>
-			<value class="string">http://alhena:7980/centralDomsWebservice/central/?wsdl</value>
+			<value class="string">http://alhena:7980/centralDomsWebservice/central/?wsdl
+			</value>
 		</entry>
+
 		<entry>
 			<key>accessibleCollectionBases</key>
 			<value class="list">
-
 				<xproperties>
 					<entry>
 						<key>collectionBaseID</key>
@@ -32,6 +29,10 @@
 					<entry>
 						<key>collectionEntryContentModelID</key>
 						<value class="string">doms:ContentModelProgram</value>
+					</entry>
+					<entry>
+						<key>baseViewID</key>
+						<value class="string">SummaVisible</value>
 					</entry>
 				</xproperties>
 
@@ -48,10 +49,12 @@
 						<key>collectionEntryContentModelID</key>
 						<value class="string">doms:ContentModelMovie</value>
 					</entry>
+					<entry>
+						<key>baseViewID</key>
+						<value class="string">BogusView</value>
+					</entry>
 				</xproperties>
 			</value>
 		</entry>
-
 	</xproperties>
 </xproperties>
-
