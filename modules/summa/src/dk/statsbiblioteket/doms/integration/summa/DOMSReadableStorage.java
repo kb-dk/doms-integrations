@@ -41,13 +41,15 @@ import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.ReadableStorage;
+import dk.statsbiblioteket.summa.storage.api.Storage;
 import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author &lt;tsh@statsbiblioteket.dk&gt;
  *
  */
-public class DOMSReadableStorage implements ReadableStorage {
+public class DOMSReadableStorage implements Storage {
 
     private final Configuration configuration;
     private final DOMSWSClient domsClient;
@@ -271,5 +273,45 @@ public class DOMSReadableStorage implements ReadableStorage {
         // FIXME! Watch out! Currently, nobody removes the iterators again!
         recordIterators.put(iteratorKey, iterator);
         return iteratorKey;
+    }
+
+    @Override
+    public void flush(Record record, QueryOptions options) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void flush(Record record) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void flushAll(List<Record> records, QueryOptions options)
+            throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void flushAll(List<Record> records) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void close() throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public void clearBase(String base) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    @Override
+    public String batchJob(String jobName,
+                           String base,
+                           long minMtime,
+                           long maxMtime,
+                           QueryOptions options) throws IOException {
+        throw new NotImplementedException();
     }
 }
