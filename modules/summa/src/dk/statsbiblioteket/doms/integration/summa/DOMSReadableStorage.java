@@ -33,6 +33,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -50,11 +51,7 @@ import dk.statsbiblioteket.summa.storage.api.Storage;
  */
 public class DOMSReadableStorage implements Storage {
 
-    // TODO: KILL? private final Configuration configuration;
     private final DOMSWSClient domsClient;
-    private final Map<String, URI> baseCollectionPIDMap;
-    private final Map<String, URI> baseEntryContentModelPIDMap;
-    private final Map<String, String> baseViewIDMap;
 
     private final Map<String, BaseDOMSConfiguration> baseConfigurations;
 
@@ -74,15 +71,8 @@ public class DOMSReadableStorage implements Storage {
     public DOMSReadableStorage(Configuration configuration)
             throws ConfigurationException {
 
-//TODO: KILL?        this.configuration = configuration;
-        baseCollectionPIDMap = new HashMap<String, URI>();
-        baseEntryContentModelPIDMap = new HashMap<String, URI>();
-        baseViewIDMap = new HashMap<String, String>();
         baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
         recordIterators = new TreeMap<Long, Iterator<Record>>();
-
-        initBaseMaps(configuration, baseCollectionPIDMap,
-                baseEntryContentModelPIDMap, baseViewIDMap);
 
         initBaseConfigurations(configuration, baseConfigurations);
         domsClient = domsLogin(configuration);
@@ -102,13 +92,39 @@ public class DOMSReadableStorage implements Storage {
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getModificationTime(java.lang.String)
      */
     public long getModificationTime(String base) throws IOException {
+
         try {
-            final URI collectionPID = baseCollectionPIDMap.get(base);
-            final String viewID = baseViewIDMap.get(base);
-            final URI entryContentModelPID = baseEntryContentModelPIDMap
-                    .get(base);
-            return domsClient.getModificationTime(collectionPID, viewID,
-                    entryContentModelPID);
+            if (base != null) {
+
+                final BaseDOMSConfiguration baseConfiguration = baseConfigurations
+                        .get(base);
+                final URI collectionPID = baseConfiguration.getCollectionPID();
+                final String viewID = baseConfiguration.getViewID();
+                final URI contentModelEntryObjectPID = baseConfiguration
+                        .getContentModelEntryObjectPID();
+
+                return domsClient.getModificationTime(collectionPID, viewID,
+                        contentModelEntryObjectPID);
+            } else {
+
+                long mostRecentTimeStamp = 0;
+                for (BaseDOMSConfiguration currentConfiguration : baseConfigurations
+                        .values()) {
+                    final URI collectionPID = currentConfiguration
+                            .getCollectionPID();
+                    final String viewID = currentConfiguration.getViewID();
+                    final URI contentModelEntryObjectPID = currentConfiguration
+                            .getContentModelEntryObjectPID();
+
+                    long currentTimeStamp = domsClient.getModificationTime(
+                            collectionPID, viewID, contentModelEntryObjectPID);
+
+                    // Update the most recent time-stamp, if necessary.
+                    mostRecentTimeStamp = (mostRecentTimeStamp < currentTimeStamp) ? currentTimeStamp
+                            : mostRecentTimeStamp;
+                }
+                return mostRecentTimeStamp;
+            }
         } catch (Exception exception) {
             throw new IOException(
                     "Failed retrieving the modification time for base: " + base,
@@ -130,16 +146,18 @@ public class DOMSReadableStorage implements Storage {
         }
 
         try {
-            final URI collectionPID = baseCollectionPIDMap.get(base);
-            final String viewID = baseViewIDMap.get(base);
-            final URI entryContentModelPID = baseEntryContentModelPIDMap
+            final BaseDOMSConfiguration baseConfiguration = baseConfigurations
                     .get(base);
+            final URI collectionPID = baseConfiguration.getCollectionPID();
+            final String viewID = baseConfiguration.getViewID();
+            final URI contentModelEntryObjectPID = baseConfiguration
+                    .getContentModelEntryObjectPID();
 
             // Remember!!! TrackerRecord.getPid() = PID of the entry object
 
             List<RecordDescription> recordDescriptions = domsClient
                     .getModifiedEntryObjects(collectionPID, viewID,
-                            entryContentModelPID, timeStamp, "Published");
+                            contentModelEntryObjectPID, timeStamp, "Published");
             // FIXME! Hard-coded "Published" state. What about an enum?
 
             // FIXME! Clarify how QueryOptions should be handled and implement
@@ -148,8 +166,12 @@ public class DOMSReadableStorage implements Storage {
             // Trivial first-shot record and iterator construction.
             final ArrayList<Record> modifiedRecords = new ArrayList<Record>();
             for (RecordDescription recordDescription : recordDescriptions) {
-                final URI modifiedEntryObjectPID = new URI(recordDescription
-                        .getPid());
+
+                // Prepend the base name to the PID in order to make it possible
+                // for the getRecord() methods to figure out what view to use
+                // when they are invoked. It's ugly, but hey! That's life....
+                final URI modifiedEntryObjectPID = new URI(base + "_"
+                        + recordDescription.getPid());
                 final byte data[] = domsClient.getViewBundle(
                         modifiedEntryObjectPID, viewID).getBytes();
                 final Record newRecord = new Record(modifiedEntryObjectPID
@@ -170,65 +192,109 @@ public class DOMSReadableStorage implements Storage {
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#next(long, int)
      */
 
-    public List<Record> next(long arg0, int arg1) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public Record getRecord(String arg0, QueryOptions arg1) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public List<Record> getRecords(List<String> arg0, QueryOptions arg1)
+    public List<Record> next(long iteratorKey, int maxRecords)
             throws IOException {
-        return new ArrayList<Record>();
+
+        final Iterator<Record> recordIterator = recordIterators
+                .get(iteratorKey);
+
+        if (recordIterator == null) {
+            throw new IOException("Unknown record iterator (iterator key: "
+                    + iteratorKey + "). Failed retrieving up to " + maxRecords
+                    + " records.");
+        }
+
+        try {
+            List<Record> resultList = new LinkedList<Record>();
+            int recordCounter = 0;
+            while (recordIterator.hasNext() && recordCounter < maxRecords) {
+                resultList.add(recordIterator.next());
+                recordCounter++;
+            }
+            return resultList;
+        } catch (Exception exception) {
+            throw new IOException("Failed retrieving up to " + maxRecords
+                    + " elements from the record iterator (iterator key: "
+                    + iteratorKey + ")");
+        }
     }
 
-    public Record next(long arg0) throws IOException {
-        // TODO Auto-generated method stub
-        return null;
+    public Record next(long iteratorKey) throws IOException {
+        final Iterator<Record> recordIterator = recordIterators
+                .get(iteratorKey);
+
+        if (recordIterator == null) {
+            throw new IOException("Unknown record iterator (iterator key: "
+                    + iteratorKey + "). Failed retrieving a record.");
+        }
+
+        return recordIterator.next();
     }
-    
+
+    public Record getRecord(String id, QueryOptions options) throws IOException {
+
+        // FIXME! Add proper query options handling.
+
+        try {
+            // All records previously returned by the DOMS storage have had the
+            // base name prepended to the DOMS entry object PID. Thus, we know
+            // that there is a base name and an underscore in the beginning of
+            // the ID.
+            final int baseDelimiterPosition = id.indexOf('_');
+            final String base = id.substring(0, baseDelimiterPosition);
+            final String contentModelEntryObjectPID = id
+                    .substring(baseDelimiterPosition + 1);
+            final String viewID = baseConfigurations.get(base).getViewID();
+            final String viewBundle = domsClient.getViewBundle(new URI(
+                    contentModelEntryObjectPID), viewID);
+
+            return new Record(contentModelEntryObjectPID, base, viewBundle
+                    .getBytes());
+        } catch (Exception exception) {
+            throw new IOException("Failed retrieving record (record id = '"
+                    + id + "', using the query options: " + options);
+        }
+    }
+
+    public List<Record> getRecords(List<String> ids, QueryOptions options)
+            throws IOException {
+
+        List<Record> resultList = new LinkedList<Record>();
+        for (String recordID : ids) {
+            resultList.add(getRecord(recordID, options));
+        }
+        return resultList;
+    }
+
     public void flush(Record record, QueryOptions options) throws IOException {
         throw new NotImplementedException();
     }
 
-    
     public void flush(Record record) throws IOException {
         throw new NotImplementedException();
     }
 
-    
     public void flushAll(List<Record> records, QueryOptions options)
             throws IOException {
         throw new NotImplementedException();
     }
 
-    
     public void flushAll(List<Record> records) throws IOException {
         throw new NotImplementedException();
     }
 
-    
     public void close() throws IOException {
         throw new NotImplementedException();
     }
 
-    
     public void clearBase(String base) throws IOException {
         throw new NotImplementedException();
     }
 
-    
-    public String batchJob(String jobName,
-                           String base,
-                           long minMtime,
-                           long maxMtime,
-                           QueryOptions options) throws IOException {
+    public String batchJob(String jobName, String base, long minMtime,
+            long maxMtime, QueryOptions options) throws IOException {
         throw new NotImplementedException();
     }
-
 
     /**
      * 
@@ -264,66 +330,6 @@ public class DOMSReadableStorage implements Storage {
                             + " (" + domsWSEndpointURL
                             + ") specified in the configuration.",
                     malformedURLException);
-        }
-    }
-
-    /**
-     * Initialise the provided maps with the relations between the Summa base
-     * names and DOMS collection PIDs, entry content model object PIDs and view
-     * IDs as described by the configuration provided by the
-     * <code>configuration</code> parameter.
-     * 
-     * @param configuration
-     *            Configuration document describing relations between Summa base
-     *            names and DOMS collections, content models and views.
-     * @param baseToCollectionPIDMap
-     *            A <code>Map</code> to add relations between Summa base names
-     *            and DOMS collection PIDs to.
-     * @param baseToEntryContentModelPIDMap
-     *            A <code>Map</code> to add relations between Summa base names
-     *            and DOMS entry content model object PIDs to.
-     * @param baseToViewIDMap
-     *            A <code>Map</code> to add relations between Summa base names
-     *            and DOMS view IDs to.
-     * @throws ConfigurationException
-     */
-    private void initBaseMaps(Configuration configuration,
-            Map<String, URI> baseToCollectionPIDMap,
-            Map<String, URI> baseToEntryContentModelPIDMap,
-            Map<String, String> baseToViewIDMap) throws ConfigurationException {
-
-        String baseID = null;
-        try {
-            final List<Configuration> baseConfigurations = configuration
-                    .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
-
-            for (Configuration subConfiguration : baseConfigurations) {
-                baseID = subConfiguration
-                        .getString(ConfigurationKeys.COLLECTION_BASE_ID);
-
-                URI previousURI = null;
-                final String collectionID_URI = subConfiguration
-                        .getString(ConfigurationKeys.COLLECTION_PID);
-                previousURI = baseToCollectionPIDMap.put(baseID, new URI(
-                        collectionID_URI));
-                // if (previousURI != null) {
-                // throw new ConfigurationException()
-                // }
-
-                final String collectionContentModelURI = subConfiguration
-                        .getString(ConfigurationKeys.COLLECTION_ENTRY_CONTENT_MODEL_PID);
-                baseToEntryContentModelPIDMap.put(baseID, new URI(
-                        collectionContentModelURI));
-
-                final String baseViewID = subConfiguration
-                        .getString(ConfigurationKeys.VIEW_ID);
-                baseToViewIDMap.put(baseID, baseViewID);
-            }
-        } catch (Exception exception) {
-            throw new ConfigurationException(
-                    "Could not retrieve the collection base (base ID = '"
-                            + baseID + "' configuration information.",
-                    exception);
         }
     }
 
