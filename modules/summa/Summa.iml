@@ -9,41 +9,31 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib/centralWebserviceInterface/jars/centralWebserviceInterface.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/summa-storage-1.6.2/jars/summa-storage-api-1.6.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../lib/sbutils-0.4.8/jars/sbutil-0.4.8.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
+      <library name="summa-common">
         <CLASSES>
           <root url="jar://$MODULE_DIR$/lib/summa-common-1.6.2/jars/summa-common-1.6.2.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/lib/summa-common-1.6.2/src/summa-common-1.6.2.jar!/" />
+        </SOURCES>
       </library>
     </orderEntry>
+    <orderEntry type="module-library">
+      <library name="summa-storage">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/summa-storage-1.6.2/jars/summa-storage-api-1.6.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/lib/summa-storage-1.6.2/src/summa-storage-1.6.2.jar!/" />
+        </SOURCES>
+      </library>
+    </orderEntry>
+    <orderEntry type="library" name="domsutils" level="project" />
+    <orderEntry type="library" name="sbutils" level="project" />
+    <orderEntry type="library" name="centralWebserviceInterface" level="project" />
+    <orderEntry type="library" name="commons-logging" level="project" />
   </component>
 </module>
 
