@@ -37,43 +37,54 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
-import dk.statsbiblioteket.summa.storage.api.ReadableStorage;
 import dk.statsbiblioteket.summa.storage.api.Storage;
-import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 /**
  * @author &lt;tsh@statsbiblioteket.dk&gt;
- *
+ * 
  */
 public class DOMSReadableStorage implements Storage {
 
-    private final Configuration configuration;
+    // TODO: KILL? private final Configuration configuration;
     private final DOMSWSClient domsClient;
     private final Map<String, URI> baseCollectionPIDMap;
     private final Map<String, URI> baseEntryContentModelPIDMap;
     private final Map<String, String> baseViewIDMap;
 
+    private final Map<String, BaseDOMSConfiguration> baseConfigurations;
+
     private final Map<Long, Iterator<Record>> recordIterators;
 
     /**
-     *
+     * Create a <code>DOMSReadableStorage</code> instance based on the
+     * configuration provided by <code>configuration</code>.
+     * 
      * @param configuration
+     *            Configuration containing information for mapping Summa base
+     *            names to DOMS collections and views.
      * @throws ConfigurationException
+     *             if the configuration contains any errors regarding option
+     *             values or document structure.
      */
     public DOMSReadableStorage(Configuration configuration)
             throws ConfigurationException {
-        this.configuration = configuration;
+
+//TODO: KILL?        this.configuration = configuration;
         baseCollectionPIDMap = new HashMap<String, URI>();
         baseEntryContentModelPIDMap = new HashMap<String, URI>();
         baseViewIDMap = new HashMap<String, String>();
+        baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
         recordIterators = new TreeMap<Long, Iterator<Record>>();
 
-        initIDMaps(configuration, baseCollectionPIDMap,
-                   baseEntryContentModelPIDMap, baseViewIDMap);
+        initBaseMaps(configuration, baseCollectionPIDMap,
+                baseEntryContentModelPIDMap, baseViewIDMap);
+
+        initBaseConfigurations(configuration, baseConfigurations);
         domsClient = domsLogin(configuration);
     }
 
@@ -81,16 +92,15 @@ public class DOMSReadableStorage implements Storage {
      * Get the time-stamp for when the latest modification occurred in the DOMS
      * collection identified by <code>base</code>. Please see the interface
      * documentation for further details.
-     *
+     * 
      * @param base
      *            ID of the collection to read from. I.e. the PID of the DOMS
      *            collection.
      * @return The time-stamp in milliseconds for the latest modification made
      *         in the collection identified by <code>base</code>.
-     *
+     * 
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getModificationTime(java.lang.String)
      */
-
     public long getModificationTime(String base) throws IOException {
         try {
             final URI collectionPID = baseCollectionPIDMap.get(base);
@@ -98,7 +108,7 @@ public class DOMSReadableStorage implements Storage {
             final URI entryContentModelPID = baseEntryContentModelPIDMap
                     .get(base);
             return domsClient.getModificationTime(collectionPID, viewID,
-                                                  entryContentModelPID);
+                    entryContentModelPID);
         } catch (Exception exception) {
             throw new IOException(
                     "Failed retrieving the modification time for base: " + base,
@@ -110,7 +120,14 @@ public class DOMSReadableStorage implements Storage {
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getRecordsModifiedAfter(long, java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)
      */
     public long getRecordsModifiedAfter(long timeStamp, String base,
-                                        QueryOptions options) throws IOException {
+            QueryOptions options) throws IOException {
+
+        // FIXME! allow base == null -> return iterator over all modified
+        // records in all bases
+        // Just hack it for now:
+        if (base == null) {
+            base = "radioTVCollection";
+        }
 
         try {
             final URI collectionPID = baseCollectionPIDMap.get(base);
@@ -122,13 +139,8 @@ public class DOMSReadableStorage implements Storage {
 
             List<RecordDescription> recordDescriptions = domsClient
                     .getModifiedEntryObjects(collectionPID, viewID,
-                                             entryContentModelPID, timeStamp, "Published");// FIXME!
-            // Hard-coded
-            // state.
-            // What
-            // about
-            // an
-            // enum?
+                            entryContentModelPID, timeStamp, "Published");
+            // FIXME! Hard-coded "Published" state. What about an enum?
 
             // FIXME! Clarify how QueryOptions should be handled and implement
             // filter-magic here...
@@ -148,9 +160,9 @@ public class DOMSReadableStorage implements Storage {
             return registerIterator(modifiedRecords.iterator());
         } catch (Exception exception) {
             throw new IOException("Failed retrieving records from base (base="
-                                  + base + ") modified after time-stamp (timeStamp="
-                                  + timeStamp + "), using QueryOptions: " + options,
-                                  exception);
+                    + base + ") modified after time-stamp (timeStamp="
+                    + timeStamp + "), using QueryOptions: " + options,
+                    exception);
         }
     }
 
@@ -163,12 +175,10 @@ public class DOMSReadableStorage implements Storage {
         return null;
     }
 
-
     public Record getRecord(String arg0, QueryOptions arg1) throws IOException {
         // TODO Auto-generated method stub
         return null;
     }
-
 
     public List<Record> getRecords(List<String> arg0, QueryOptions arg1)
             throws IOException {
@@ -179,9 +189,49 @@ public class DOMSReadableStorage implements Storage {
         // TODO Auto-generated method stub
         return null;
     }
+    
+    public void flush(Record record, QueryOptions options) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    
+    public void flush(Record record) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    
+    public void flushAll(List<Record> records, QueryOptions options)
+            throws IOException {
+        throw new NotImplementedException();
+    }
+
+    
+    public void flushAll(List<Record> records) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    
+    public void close() throws IOException {
+        throw new NotImplementedException();
+    }
+
+    
+    public void clearBase(String base) throws IOException {
+        throw new NotImplementedException();
+    }
+
+    
+    public String batchJob(String jobName,
+                           String base,
+                           long minMtime,
+                           long maxMtime,
+                           QueryOptions options) throws IOException {
+        throw new NotImplementedException();
+    }
+
 
     /**
-     *
+     * 
      * @param configuration
      * @return
      * @throws ConfigurationException
@@ -198,7 +248,7 @@ public class DOMSReadableStorage implements Storage {
         if (userName == null || password == null) {
             throw new ConfigurationException(
                     "Invalid DOMS user credentials in the configuration. username = '"
-                    + userName + "'  password = '" + password + "'");
+                            + userName + "'  password = '" + password + "'");
         }
 
         final String domsWSEndpointURL = configuration
@@ -211,16 +261,37 @@ public class DOMSReadableStorage implements Storage {
         } catch (MalformedURLException malformedURLException) {
             throw new ConfigurationException(
                     "Failed connecting to the DOMS API webservice with the URL"
-                    + " (" + domsWSEndpointURL
-                    + ") specified in the configuration.",
+                            + " (" + domsWSEndpointURL
+                            + ") specified in the configuration.",
                     malformedURLException);
         }
     }
 
-    private void initIDMaps(Configuration configuration,
-                            Map<String, URI> baseToCollectionPIDMap,
-                            Map<String, URI> baseToEntryContentModelPIDMap,
-                            Map<String, String> baseToViewIDMap) throws ConfigurationException {
+    /**
+     * Initialise the provided maps with the relations between the Summa base
+     * names and DOMS collection PIDs, entry content model object PIDs and view
+     * IDs as described by the configuration provided by the
+     * <code>configuration</code> parameter.
+     * 
+     * @param configuration
+     *            Configuration document describing relations between Summa base
+     *            names and DOMS collections, content models and views.
+     * @param baseToCollectionPIDMap
+     *            A <code>Map</code> to add relations between Summa base names
+     *            and DOMS collection PIDs to.
+     * @param baseToEntryContentModelPIDMap
+     *            A <code>Map</code> to add relations between Summa base names
+     *            and DOMS entry content model object PIDs to.
+     * @param baseToViewIDMap
+     *            A <code>Map</code> to add relations between Summa base names
+     *            and DOMS view IDs to.
+     * @throws ConfigurationException
+     */
+    private void initBaseMaps(Configuration configuration,
+            Map<String, URI> baseToCollectionPIDMap,
+            Map<String, URI> baseToEntryContentModelPIDMap,
+            Map<String, String> baseToViewIDMap) throws ConfigurationException {
+
         String baseID = null;
         try {
             final List<Configuration> baseConfigurations = configuration
@@ -230,35 +301,112 @@ public class DOMSReadableStorage implements Storage {
                 baseID = subConfiguration
                         .getString(ConfigurationKeys.COLLECTION_BASE_ID);
 
+                URI previousURI = null;
                 final String collectionID_URI = subConfiguration
-                        .getString(ConfigurationKeys.COLLECTION_ID);
-                baseToCollectionPIDMap.put(baseID, new URI(collectionID_URI));
+                        .getString(ConfigurationKeys.COLLECTION_PID);
+                previousURI = baseToCollectionPIDMap.put(baseID, new URI(
+                        collectionID_URI));
+                // if (previousURI != null) {
+                // throw new ConfigurationException()
+                // }
 
                 final String collectionContentModelURI = subConfiguration
-                        .getString(ConfigurationKeys.COLLECTION_ENTRY_CONTENT_MODEL_ID);
+                        .getString(ConfigurationKeys.COLLECTION_ENTRY_CONTENT_MODEL_PID);
                 baseToEntryContentModelPIDMap.put(baseID, new URI(
                         collectionContentModelURI));
 
                 final String baseViewID = subConfiguration
-                        .getString(ConfigurationKeys.BASE_VIEW_ID);
+                        .getString(ConfigurationKeys.VIEW_ID);
                 baseToViewIDMap.put(baseID, baseViewID);
             }
         } catch (Exception exception) {
             throw new ConfigurationException(
                     "Could not retrieve the collection base (base ID = '"
-                    + baseID + "' configuration information.",
+                            + baseID + "' configuration information.",
                     exception);
         }
     }
 
     /**
+     * Initialise the provided map of base configurations with the relations
+     * between the Summa base names and views of DOMS collections as described
+     * by the configuration provided by the <code>configuration</code>
+     * parameter.
+     * <p/>
+     * This methos will add an entry to the <code>baseConfigurationsMap</code>
+     * for each Summa base configuration found in the configuration document.
+     * Each of these configurations will be mapped to a base name.
+     * 
+     * @param configuration
+     *            Configuration document describing relations between Summa base
+     *            names and DOMS collections, content models and views.
+     * 
+     * @param baseConfigurationsMap
+     *            The map to initialise.
+     * @throws ConfigurationException
+     *             if the configuration contains any illegal values or document
+     *             structures.
+     */
+    private void initBaseConfigurations(Configuration configuration,
+            Map<String, BaseDOMSConfiguration> baseConfigurationsMap)
+            throws ConfigurationException {
+
+        String baseID = null;
+        BaseDOMSConfiguration previousConfig = null;
+        try {
+            final List<Configuration> baseConfigurations = configuration
+                    .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
+
+            for (Configuration subConfiguration : baseConfigurations) {
+                baseID = subConfiguration
+                        .getString(ConfigurationKeys.COLLECTION_BASE_ID);
+
+                final String collectionURI = subConfiguration
+                        .getString(ConfigurationKeys.COLLECTION_PID);
+
+                final URI collectionPID = new URI(collectionURI);
+
+                final String collectionContentModelURI = subConfiguration
+                        .getString(ConfigurationKeys.COLLECTION_ENTRY_CONTENT_MODEL_PID);
+
+                final URI entryContentModelPID = new URI(
+                        collectionContentModelURI);
+
+                final String viewID = subConfiguration
+                        .getString(ConfigurationKeys.VIEW_ID);
+
+                BaseDOMSConfiguration newBaseConfig = new BaseDOMSConfiguration(
+                        collectionPID, entryContentModelPID, viewID);
+
+                previousConfig = baseConfigurationsMap.put(baseID,
+                        newBaseConfig);
+                if (previousConfig != null) {
+                    // We want to throw an exception here, however, there is no
+                    // need to get it nested in a fault barrier exception. Thus,
+                    // break and throw later.
+                    break;
+                }
+            }
+        } catch (Exception exception) {
+            throw new ConfigurationException(
+                    "Could not retrieve the collection base (base ID = '"
+                            + baseID + "' configuration information.",
+                    exception);
+        }
+        if (previousConfig != null) {
+            throw new ConfigurationException("base (base ID = '" + baseID
+                    + "' has already been associated with a" + " DOMS view.");
+        }
+
+    }
+
+    /**
      * Register <code>iterator</code> in the internal iterator map and return
      * the iterator key.
-     *
+     * 
      * @param iterator
      * @return
      */
-
     private synchronized long registerIterator(Iterator<Record> iterator)
             throws Exception {
         long iteratorKey = Math.round(Long.MAX_VALUE * Math.random());
@@ -273,45 +421,5 @@ public class DOMSReadableStorage implements Storage {
         // FIXME! Watch out! Currently, nobody removes the iterators again!
         recordIterators.put(iteratorKey, iterator);
         return iteratorKey;
-    }
-
-    @Override
-    public void flush(Record record, QueryOptions options) throws IOException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void flush(Record record) throws IOException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void flushAll(List<Record> records, QueryOptions options)
-            throws IOException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void flushAll(List<Record> records) throws IOException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void close() throws IOException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public void clearBase(String base) throws IOException {
-        throw new NotImplementedException();
-    }
-
-    @Override
-    public String batchJob(String jobName,
-                           String base,
-                           long minMtime,
-                           long maxMtime,
-                           QueryOptions options) throws IOException {
-        throw new NotImplementedException();
     }
 }

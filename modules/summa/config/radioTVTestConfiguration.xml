@@ -23,15 +23,15 @@
 						<value class="string">radioTVCollection</value>
 					</entry>
 					<entry>
-						<key>collectionID</key>
+						<key>collectionPID</key>
 						<value class="string">doms:RadioTV_Collection</value>
 					</entry>
 					<entry>
-						<key>collectionEntryContentModelID</key>
+						<key>collectionEntryContentModelPID</key>
 						<value class="string">doms:ContentModelProgram</value>
 					</entry>
 					<entry>
-						<key>baseViewID</key>
+						<key>viewID</key>
 						<value class="string">SummaVisible</value>
 					</entry>
 				</xproperties>
@@ -42,15 +42,15 @@
 						<value class="string">sbTorrent</value>
 					</entry>
 					<entry>
-						<key>collectionID</key>
+						<key>collectionPID</key>
 						<value class="string">doms:PiratedMovies</value>
 					</entry>
 					<entry>
-						<key>collectionEntryContentModelID</key>
+						<key>collectionEntryContentModelPID</key>
 						<value class="string">doms:ContentModelMovie</value>
 					</entry>
 					<entry>
-						<key>baseViewID</key>
+						<key>viewID</key>
 						<value class="string">BogusView</value>
 					</entry>
 				</xproperties>
