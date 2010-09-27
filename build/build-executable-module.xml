@@ -1,10 +1,10 @@
 <!--
   ~ Doms build framework version 1.0.11
   ~
-  ~ $Id$
-  ~ $Revision$
-  ~ $Date$
-  ~ $Author$
+  ~ $Id: build-executable-module.xml 780 2010-09-27 09:17:27Z blekinge $
+  ~ $Revision: 780 $
+  ~ $Date: 2010-09-27 11:17:27 +0200 (Mon, 27 Sep 2010) $
+  ~ $Author: blekinge $
   ~
   ~ The DOMS project.
   ~ Copyright (C) 2007-2010  The State and University Library
@@ -27,38 +27,15 @@
   ~ under the License.
   -->
 
-<project name="webservice">
+<project name="executable">
     <import file="build-module.xml"/>
 
-    <property name="wsdl.dir" value="data/wsdl"/>
-
-    <fileset id="webinf" dir="${basedir}/web/WEB-INF">
-    </fileset>
-
-    <fileset id="webcontent" dir="${basedir}/web">
-        <exclude name="WEB-INF/**"/>
-    </fileset>
-
-    <target name="war" depends="jar" unless="codeNotChanged">
-        <buildwar jars.to.pack="classpath"
-                  warfilename="${warfilename}"
-                  web-inf="webinf"
-                  web-content="webcontent"
-                  wsdl.dir="${wsdl.dir}"/>
+      <target name="executable" depends="jar">
+        <executablezip/>
         <delete file="dist/${jarfile}"/>
     </target>
 
-    <target name="compile.check">
-        <uptodate property="codeNotChanged" targetfile="dist/${warfilename}">
-            <srcfiles dir="src">
-                <include name="**/*"/>
-            </srcfiles>
-        </uptodate>
-    </target>
 
-    <target name="all" depends="war,module.all"/>
-
-    <!--All project libs are packed in the war, do not copy them-->
-    <target name="_copyLibsForDist" depends="_copyLicensesForDist"/>
+    <target name="all" depends="executable,module.all"/>
 
 </project>
