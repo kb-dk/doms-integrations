@@ -40,9 +40,9 @@ public class ConfigurationKeys {
      */
     public static final String ACCESSIBLE_COLLECTION_BASES = "accessibleCollectionBases";
     public static final String COLLECTION_BASE_ID = "collectionBaseID";
-    public static final String COLLECTION_ID = "collectionID";
-    public static final String COLLECTION_ENTRY_CONTENT_MODEL_ID = "collectionEntryContentModelID";
-    public static final String BASE_VIEW_ID = "baseViewID";
+    public static final String COLLECTION_PID = "collectionPID";
+    public static final String COLLECTION_ENTRY_CONTENT_MODEL_PID = "collectionEntryContentModelPID";
+    public static final String VIEW_ID = "viewID";
     public static final String DOMS_USER_NAME = "DOMSUserName";
     public static final String DOMS_PASSWORD = "DOMSPassword";
     public static final String DOMS_API_WEBSERVICE_URL = "DOMSWebserviceURL";

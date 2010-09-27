@@ -15,6 +15,12 @@
         </entry>
 
 
+        <entry>
+            <key>summa.storage.rmi.service.name</key>
+            <value class="string">${site.id}-storage</value>
+        </entry>
+
+
         <!-- Name to register the storage service under -->
         <entry>
             <key>summa.storage.rmi.service.name</key>
@@ -65,6 +71,17 @@
 -->
 
         <!--
+        * The location of the database to use/create. This will be relative to
+          the persistent-dir for the client. This also means that only one instance
+          of this service can be deployed at each client.
+        -->
+        <entry>
+            <key>summa.storage.database.location</key>
+            <value class="string">storage/${site.id}</value>
+        </entry>
+
+
+        <!--
         * The property-key for the boolean value determining if a new database
         * should be created is there is no existing database. If createnew is
         * true and a database exists and forcenew is true, the existing database
@@ -85,20 +102,6 @@
             <value class="string">false</value>
         </entry>
 
-        <!--
-        * The location of the database to use/create. This will be relative to
-          the persistent-dir for the client. This also means that only one instance
-          of this service can be deployed at each client.
-        -->
-        <entry>
-            <key>summa.storage.database.location</key>
-            <value class="string">storage/${site.id}</value>
-        </entry>
-
-        <entry>
-            <key>summa.storage.rmi.service.name</key>
-            <value class="string">${site.id}-storage</value>
-        </entry>
 
         <!-- Disable tracking of relations on bases that do not use relations.
 This is not strictly necessary, but provides some optimization -->
@@ -131,34 +134,16 @@ This is not strictly necessary, but provides some optimization -->
                         <value class="string">radioTVCollection</value>
                     </entry>
                     <entry>
-                        <key>collectionID</key>
+                        <key>collectionPID</key>
                         <value class="string">doms:RadioTV_Collection</value>
                     </entry>
                     <entry>
-                        <key>collectionEntryContentModelID</key>
+                        <key>collectionEntryContentModelPID</key>
                         <value class="string">doms:ContentModelProgram</value>
                     </entry>
                     <entry>
-                        <key>baseViewID</key>
+                        <key>viewID</key>
                         <value class="string">SummaVisible</value>
-                    </entry>
-                </xproperties>
-                <xproperties>
-                    <entry>
-                        <key>collectionBaseID</key>
-                        <value class="string">sbTorrent</value>
-                    </entry>
-                    <entry>
-                        <key>collectionID</key>
-                        <value class="string">doms:PiratedMovies</value>
-                    </entry>
-                    <entry>
-                        <key>collectionEntryContentModelID</key>
-                        <value class="string">doms:ContentModelMovie</value>
-                    </entry>
-                    <entry>
-                        <key>baseViewID</key>
-                        <value class="string">BogusView</value>
                     </entry>
                 </xproperties>
             </value>

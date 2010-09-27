@@ -62,7 +62,7 @@ public class DOMSReadableStorageTest {
 
 	    final String baseID = getTestBaseID();
 
-	    assertTrue("The latest modification time of the collection (base='"
+	    assertFalse("The latest modification time of the collection (base='"
 		    + baseID + "') was implausible old.", storage
 		    .getModificationTime(baseID) == 0);
 	} catch (Exception exception) {
