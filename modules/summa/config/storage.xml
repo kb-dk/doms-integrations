@@ -139,7 +139,7 @@ This is not strictly necessary, but provides some optimization -->
                     </entry>
                     <entry>
                         <key>collectionEntryContentModelPID</key>
-                        <value class="string">doms:ContentModelProgram</value>
+                        <value class="string">doms:ContentModel_Program</value>
                     </entry>
                     <entry>
                         <key>viewID</key>

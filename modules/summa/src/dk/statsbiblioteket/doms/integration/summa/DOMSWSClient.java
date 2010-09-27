@@ -42,7 +42,6 @@ import org.w3c.dom.Document;
 import dk.statsbiblioteket.doms.centralWebservice.CentralWebservice;
 import dk.statsbiblioteket.doms.centralWebservice.CentralWebserviceService;
 import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
-import dk.statsbiblioteket.doms.centralWebservice.TrackerRecord;
 import dk.statsbiblioteket.doms.centralWebservice.ViewBundle;
 import dk.statsbiblioteket.util.xml.DOM;
 
@@ -314,9 +313,6 @@ public class DOMSWSClient {
     public long getModificationTime(URI collectionPID, String viewID,
 	    URI entryContentModelPID) throws ServerError {
 	try {
-	    System.out.println("DOMS client invoked with: collectionPID="
-		    + collectionPID + "  viewID=" + viewID
-		    + "  entryContentModelPID=" + entryContentModelPID);
 	    return domsAPI.getLatestModified(collectionPID.toString(), viewID,
 		    entryContentModelPID.toString());
 
