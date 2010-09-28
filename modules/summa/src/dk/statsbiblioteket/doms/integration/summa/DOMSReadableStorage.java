@@ -51,6 +51,11 @@ import dk.statsbiblioteket.summa.storage.api.Storage;
  */
 public class DOMSReadableStorage implements Storage {
 
+    /**
+     * 
+     */
+    private static final String RECORD_ID_DELIMITER = "_";
+
     private final DOMSWSClient domsClient;
 
     private final Map<String, BaseDOMSConfiguration> baseConfigurations;
@@ -80,8 +85,11 @@ public class DOMSReadableStorage implements Storage {
 
     /**
      * Get the time-stamp for when the latest modification occurred in the DOMS
-     * collection identified by <code>base</code>. Please see the interface
-     * documentation for further details.
+     * collection identified by <code>base</code>. This method will resolve
+     * <code>base</code> to a DOMS collection, content model entry object and
+     * view, using the configuration given to this
+     * <code>DOMSReadableStorage</code> instance, and query the DOMS for any
+     * changes. Please see the interface documentation for further details.
      * 
      * @param base
      *            ID of the collection to read from. I.e. the PID of the DOMS
@@ -132,9 +140,6 @@ public class DOMSReadableStorage implements Storage {
         }
     }
 
-    /* (non-Javadoc)
-     * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getRecordsModifiedAfter(long, java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)
-     */
     public long getRecordsModifiedAfter(long timeStamp, String base,
             QueryOptions options) throws IOException {
 
@@ -167,15 +172,17 @@ public class DOMSReadableStorage implements Storage {
             final ArrayList<Record> modifiedRecords = new ArrayList<Record>();
             for (RecordDescription recordDescription : recordDescriptions) {
 
+                final URI modifiedEntryObjectPID = new URI(recordDescription
+                        .getPid());
+                final byte data[] = domsClient.getViewBundle(
+                        modifiedEntryObjectPID, viewID).getBytes();
+
                 // Prepend the base name to the PID in order to make it possible
                 // for the getRecord() methods to figure out what view to use
                 // when they are invoked. It's ugly, but hey! That's life....
-                final URI modifiedEntryObjectPID = new URI(base + "_"
-                        + recordDescription.getPid());
-                final byte data[] = domsClient.getViewBundle(
-                        modifiedEntryObjectPID, viewID).getBytes();
-                final Record newRecord = new Record(modifiedEntryObjectPID
-                        .toString(), base, data);
+                final String summaRecordID = base + RECORD_ID_DELIMITER
+                        + modifiedEntryObjectPID.toString();
+                final Record newRecord = new Record(summaRecordID, base, data);
                 modifiedRecords.add(newRecord);
             }
 
@@ -187,10 +194,6 @@ public class DOMSReadableStorage implements Storage {
                     exception);
         }
     }
-
-    /* (non-Javadoc)
-     * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#next(long, int)
-     */
 
     public List<Record> next(long iteratorKey, int maxRecords)
             throws IOException {
@@ -231,7 +234,8 @@ public class DOMSReadableStorage implements Storage {
         return recordIterator.next();
     }
 
-    public Record getRecord(String id, QueryOptions options) throws IOException {
+    public Record getRecord(String summaRecordID, QueryOptions options)
+            throws IOException {
 
         // FIXME! Add proper query options handling.
 
@@ -240,10 +244,13 @@ public class DOMSReadableStorage implements Storage {
             // base name prepended to the DOMS entry object PID. Thus, we know
             // that there is a base name and an underscore in the beginning of
             // the ID.
-            final int baseDelimiterPosition = id.indexOf('_');
-            final String base = id.substring(0, baseDelimiterPosition);
-            final String contentModelEntryObjectPID = id
+            final int baseDelimiterPosition = summaRecordID
+                    .indexOf(RECORD_ID_DELIMITER);
+            final String base = summaRecordID.substring(0,
+                    baseDelimiterPosition);
+            final String contentModelEntryObjectPID = summaRecordID
                     .substring(baseDelimiterPosition + 1);
+
             final String viewID = baseConfigurations.get(base).getViewID();
             final String viewBundle = domsClient.getViewBundle(new URI(
                     contentModelEntryObjectPID), viewID);
@@ -252,15 +259,15 @@ public class DOMSReadableStorage implements Storage {
                     .getBytes());
         } catch (Exception exception) {
             throw new IOException("Failed retrieving record (record id = '"
-                    + id + "', using the query options: " + options);
+                    + summaRecordID + "', using the query options: " + options);
         }
     }
 
-    public List<Record> getRecords(List<String> ids, QueryOptions options)
-            throws IOException {
+    public List<Record> getRecords(List<String> summaRecordIDs,
+            QueryOptions options) throws IOException {
 
         List<Record> resultList = new LinkedList<Record>();
-        for (String recordID : ids) {
+        for (String recordID : summaRecordIDs) {
             resultList.add(getRecord(recordID, options));
         }
         return resultList;
