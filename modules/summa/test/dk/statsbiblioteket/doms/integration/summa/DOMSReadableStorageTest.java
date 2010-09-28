@@ -3,9 +3,9 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -117,7 +117,7 @@ public class DOMSReadableStorageTest {
 
             // FIXME! Test various QueryOptions.
             // TODO: Test the behaviour if base is null
-            
+
             // Expect at least one element in the configured collection.
             assertNotNull(storage.next(iteratorKey));
 
@@ -145,7 +145,10 @@ public class DOMSReadableStorageTest {
             final long SINCE_ANCIENT_TIMES = 0;
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
-            
+
+            // FIXME! Test various QueryOptions.
+            // TODO: Test the behaviour if base is null
+
             // Expect at least one element in the configured collection.
             assertFalse(storage.next(iteratorKey, Integer.MAX_VALUE).isEmpty());
         } catch (Exception exception) {
@@ -166,10 +169,21 @@ public class DOMSReadableStorageTest {
     @Test
     public void testGetRecord() {
         try {
-            
-            Record record = storage.getRecord("doms:non-existent", null);
-            assertNull(record);
-            // TODO: Improve this test.
+
+            final String baseID = getTestBaseID();
+            final long SINCE_ANCIENT_TIMES = 0;
+            final long iteratorKey = storage.getRecordsModifiedAfter(
+                    SINCE_ANCIENT_TIMES, baseID, null);
+
+            // FIXME! Test various QueryOptions.
+            // TODO: Test the behaviour if base is null
+
+            // Expect at least one element in the configured collection.
+            final Record anyRecord = storage.next(iteratorKey);
+
+            final Record sameRecord = storage
+                    .getRecord(anyRecord.getId(), null);
+            assertEquals("Failed performing an explicit retrieval of the record returned by the iterator.", anyRecord, sameRecord);
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final PrintStream failureMessage = new PrintStream(bos);
@@ -188,6 +202,7 @@ public class DOMSReadableStorageTest {
     @Test
     public void testGetRecords() {
         try {
+            
             final String[] pidList = new String[] { "doms:1", "doms:2",
                     "doms:3" };
             List<Record> records = storage.getRecords(Arrays.asList(pidList),
