@@ -39,26 +39,31 @@ package dk.statsbiblioteket.doms.integration.summa;
 public class ServerError extends Exception {
 
     /**
+     * 
+     */
+    private static final long serialVersionUID = -5490820003022778643L;
+
+    /**
      *
      */
     public ServerError() {
-	// TODO Auto-generated constructor stub
+        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param message
      */
     public ServerError(String message) {
-	super(message);
-	// TODO Auto-generated constructor stub
+        super(message);
+        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param cause
      */
     public ServerError(Throwable cause) {
-	super(cause);
-	// TODO Auto-generated constructor stub
+        super(cause);
+        // TODO Auto-generated constructor stub
     }
 
     /**
@@ -66,8 +71,8 @@ public class ServerError extends Exception {
      * @param cause
      */
     public ServerError(String message, Throwable cause) {
-	super(message, cause);
-	// TODO Auto-generated constructor stub
+        super(message, cause);
+        // TODO Auto-generated constructor stub
     }
 
 }

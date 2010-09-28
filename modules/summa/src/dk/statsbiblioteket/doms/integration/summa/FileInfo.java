@@ -60,11 +60,11 @@ public class FileInfo {
      *            file.
      */
     public FileInfo(String fileName, URL fileLocation, String md5Sum,
-	    URI fileFormatURI) {
-	this.fileName = fileName;
-	this.fileLocation = fileLocation;
-	this.md5Sum = md5Sum;
-	this.fileFormatURI = fileFormatURI;
+            URI fileFormatURI) {
+        this.fileName = fileName;
+        this.fileLocation = fileLocation;
+        this.md5Sum = md5Sum;
+        this.fileFormatURI = fileFormatURI;
     }
 
     /**
@@ -73,7 +73,7 @@ public class FileInfo {
      * @return A string containing the file name.
      */
     public String getFileName() {
-	return fileName;
+        return fileName;
     }
 
     /**
@@ -82,7 +82,7 @@ public class FileInfo {
      * @return A <code>URL</code> of the file data.
      */
     public URL getFileLocation() {
-	return fileLocation;
+        return fileLocation;
     }
 
     /**
@@ -93,7 +93,7 @@ public class FileInfo {
      *         <code>FileInfo</code> object.
      */
     public String getMd5Sum() {
-	return md5Sum;
+        return md5Sum;
     }
 
     /**
@@ -104,7 +104,7 @@ public class FileInfo {
      *         <code>FileInfo</code>.
      */
     public URI getFileFormatURI() {
-	return fileFormatURI;
+        return fileFormatURI;
     }
 
     /* (non-Javadoc)
@@ -112,8 +112,8 @@ public class FileInfo {
      */
     @Override
     public String toString() {
-	return "FileInfo [fileFormatURI=" + fileFormatURI + ", fileLocation="
-	        + fileLocation + ", fileName=" + fileName + ", md5Sum="
-	        + md5Sum + "]";
+        return "FileInfo [fileFormatURI=" + fileFormatURI + ", fileLocation="
+                + fileLocation + ", fileName=" + fileName + ", md5Sum="
+                + md5Sum + "]";
     }
 }
