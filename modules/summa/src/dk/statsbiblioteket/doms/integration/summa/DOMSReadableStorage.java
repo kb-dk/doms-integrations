@@ -255,7 +255,7 @@ public class DOMSReadableStorage implements Storage {
             final String viewBundle = domsClient.getViewBundle(new URI(
                     contentModelEntryObjectPID), viewID);
 
-            return new Record(contentModelEntryObjectPID, base, viewBundle
+            return new Record(summaRecordID, base, viewBundle
                     .getBytes());
         } catch (Exception exception) {
             throw new IOException("Failed retrieving record (record id = '"
