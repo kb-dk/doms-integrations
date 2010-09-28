@@ -6,12 +6,11 @@ package dk.statsbiblioteket.doms.integration.summa;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.After;
@@ -183,7 +182,9 @@ public class DOMSReadableStorageTest {
 
             final Record sameRecord = storage
                     .getRecord(anyRecord.getId(), null);
-            assertEquals("Failed performing an explicit retrieval of the record returned by the iterator.", anyRecord, sameRecord);
+            assertEquals(
+                    "Failed performing an explicit retrieval of the record returned by the iterator.",
+                    anyRecord, sameRecord);
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final PrintStream failureMessage = new PrintStream(bos);
@@ -202,13 +203,32 @@ public class DOMSReadableStorageTest {
     @Test
     public void testGetRecords() {
         try {
-            
-            final String[] pidList = new String[] { "doms:1", "doms:2",
-                    "doms:3" };
-            List<Record> records = storage.getRecords(Arrays.asList(pidList),
-                    null);
-            assertNotNull(records);
-            assertTrue(records.isEmpty());
+
+            // Get an iterator over all modified records.
+            final String baseID = getTestBaseID();
+            final long SINCE_ANCIENT_TIMES = 0;
+            final long iteratorKey = storage.getRecordsModifiedAfter(
+                    SINCE_ANCIENT_TIMES, baseID, null);
+
+            // FIXME! Test various QueryOptions.
+            // TODO: Test the behaviour if base is null
+
+            // Expect that there are least three elements in the configured
+            // collection and collect them and their summa ID.
+            final ArrayList<Record> iteratorReords = new ArrayList<Record>();
+            final ArrayList<String> summaIDs = new ArrayList<String>();
+            for (int i = 0; i < 3; i++) {
+                final Record aRecord = storage.next(iteratorKey);
+                iteratorReords.add(aRecord);
+                summaIDs.add(aRecord.getId());
+            }
+
+            // Get the same records once again, using the getRecords() method.
+            List<Record> recordsFromGet = storage.getRecords(summaIDs, null);
+            assertEquals(
+                    "The records returned by getRecords() are not equal to "
+                            + "the ones returned by the iterator.",
+                    iteratorReords, recordsFromGet);
             // TODO: Improve this test.
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -228,10 +248,15 @@ public class DOMSReadableStorageTest {
     @Test
     public void testNextLong() {
         try {
-            // Just trash the returned record. There is no way to validate them
+            // Get an iterator over all modified records.
+            final String baseID = getTestBaseID();
+            final long SINCE_ANCIENT_TIMES = 0;
+            final long iteratorKey = storage.getRecordsModifiedAfter(
+                    SINCE_ANCIENT_TIMES, baseID, null);
+
+            // Just trash the returned record. There is no way to validate it
             // anyway.
-            assertNotNull(storage.next(7));
-            assertTrue(true);
+            assertNotNull(storage.next(iteratorKey));
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final PrintStream failureMessage = new PrintStream(bos);
