@@ -131,7 +131,7 @@ This is not strictly necessary, but provides some optimization -->
                 <xproperties>
                     <entry>
                         <key>collectionBaseID</key>
-                        <value class="string">radioTVCollection</value>
+                        <value class="string">doms</value>
                     </entry>
                     <entry>
                         <key>collectionPID</key>
