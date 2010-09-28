@@ -147,7 +147,7 @@ public class DOMSReadableStorage implements Storage {
         // records in all bases
         // Just hack it for now:
         if (base == null) {
-            base = "radioTVCollection";
+            base = "doms_radioTVCollection";
         }
 
         try {
