@@ -181,21 +181,58 @@ public class DOMSReadableStorageTest {
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#next(long, int)}
      * .
      * 
-     * This test will either work and be successful or break violently.
+     * This test will succeed if <code>next(long, int)</code> on the
+     * DOMSReadableStorage returns any records, given an iterator key for
+     * iteration over all records in the base returned by the
+     * <code>getTestBaseID()</code> helper method in this test class. Thus, the
+     * DOMS server associated with this base ID in the test configuration must
+     * contain some objects in order to make this test run successfully.
      */
     @Test
     public void testNextLongInt() {
+
         try {
             final String baseID = getTestBaseID();
             final long SINCE_ANCIENT_TIMES = 0;
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
 
-            // FIXME! Test various QueryOptions.
-            // TODO: Test the behaviour if base is null
-
             // Expect at least one element in the configured collection.
             assertFalse(storage.next(iteratorKey, Integer.MAX_VALUE).isEmpty());
+        } catch (Exception exception) {
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            final PrintStream failureMessage = new PrintStream(bos);
+            failureMessage.print("testNextLongInt(): Caught exception: ");
+            exception.printStackTrace(failureMessage);
+            failureMessage.flush();
+            fail(bos.toString());
+        }
+    }
+    
+    /**
+     * Test method for
+     * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#next(long)}
+     * .
+     * 
+     * This test will succeed if <code>next(long)</code> on the
+     * DOMSReadableStorage returns any records, given an iterator key for
+     * iteration over all records in the base returned by the
+     * <code>getTestBaseID()</code> helper method in this test class. Thus, the
+     * DOMS server associated with this base ID in the test configuration must
+     * contain some objects in order to make this test run successfully.
+     */
+    @Test
+    public void testNextLong() {
+        try {
+            // Get an iterator over all modified records.
+            final String baseID = getTestBaseID();
+            final long SINCE_ANCIENT_TIMES = 0;
+            final long iteratorKey = storage.getRecordsModifiedAfter(
+                    SINCE_ANCIENT_TIMES, baseID, null);
+
+            // Just trash the returned record. There is no way to validate it
+            // anyway.
+            assertNotNull(storage.next(iteratorKey));
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final PrintStream failureMessage = new PrintStream(bos);
@@ -276,33 +313,6 @@ public class DOMSReadableStorageTest {
                             + "the ones returned by the iterator.",
                     iteratorReords, recordsFromGet);
             // TODO: Improve this test.
-        } catch (Exception exception) {
-            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
-            final PrintStream failureMessage = new PrintStream(bos);
-            failureMessage.print("testNextLong(): Caught exception: ");
-            exception.printStackTrace(failureMessage);
-            failureMessage.flush();
-            fail(bos.toString());
-        }
-    }
-
-    /**
-     * Test method for
-     * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#next(long)}
-     * .
-     */
-    @Test
-    public void testNextLong() {
-        try {
-            // Get an iterator over all modified records.
-            final String baseID = getTestBaseID();
-            final long SINCE_ANCIENT_TIMES = 0;
-            final long iteratorKey = storage.getRecordsModifiedAfter(
-                    SINCE_ANCIENT_TIMES, baseID, null);
-
-            // Just trash the returned record. There is no way to validate it
-            // anyway.
-            assertNotNull(storage.next(iteratorKey));
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final PrintStream failureMessage = new PrintStream(bos);
