@@ -273,6 +273,7 @@ public class DOMSReadableStorage implements Storage {
         throw new NotImplementedException();
     }
 
+    // FIXME! javadoc
     private List<Record> getSingleBaseRecordsModifiedAfter(long timeStamp,
             String summaBaseID, QueryOptions options) throws ServerError,
             URISyntaxException {
@@ -317,10 +318,17 @@ public class DOMSReadableStorage implements Storage {
     }
 
     /**
+     * Create a <code>DOMSReadableStorage</code> instance which is logged into
+     * the DOMS server specified in <code>configuration</code> using the
+     * username, password and web service end-point also specified by
+     * <code>configuration</code>.
      * 
      * @param configuration
-     * @return
+     *            a <code>DOMSReadableStorage</code> configuration object.
+     * @return a reference to the <code>DOMSReadableStorage</code> instance.
      * @throws ConfigurationException
+     *             if the configuration contains any illegal values or
+     *             structures.
      */
     private DOMSWSClient domsLogin(Configuration configuration)
             throws ConfigurationException {
@@ -359,7 +367,7 @@ public class DOMSReadableStorage implements Storage {
      * by the configuration provided by the <code>configuration</code>
      * parameter.
      * <p/>
-     * This methos will add an entry to the <code>baseConfigurationsMap</code>
+     * This method will add an entry to the <code>baseConfigurationsMap</code>
      * for each Summa base configuration found in the configuration document.
      * Each of these configurations will be mapped to a base name.
      * 
@@ -429,9 +437,16 @@ public class DOMSReadableStorage implements Storage {
     /**
      * Register <code>iterator</code> in the internal iterator map and return
      * the iterator key.
+     * <p/>
+     * This method will attempt to generate a random, non-negative iterator key
+     * which is not already used by the iterator map. However, if this fails it
+     * will throw an exception.
      * 
      * @param iterator
-     * @return
+     *            a <code>Record</code> iterator to add to the map.
+     * @return the key associated with the iterator.
+     * @throws Exception
+     *             if no vacant iterator ID could be found.
      */
     private synchronized long registerIterator(Iterator<Record> iterator)
             throws Exception {

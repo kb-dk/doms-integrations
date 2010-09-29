@@ -10,7 +10,7 @@ import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.junit.After;
@@ -208,7 +208,7 @@ public class DOMSReadableStorageTest {
             fail(bos.toString());
         }
     }
-    
+
     /**
      * Test method for
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#next(long)}
@@ -246,19 +246,24 @@ public class DOMSReadableStorageTest {
     /**
      * Test method for
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getRecord(java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)}
-     * .
+     * . This test fetches the first record returned by calling
+     * <code>getRecordsModifiedAfter()</code> and <code>next()</code>, retrieves
+     * its ID and tests the <code>getRecord(id, option)</code> by calling it
+     * with the retrieved ID. The returned record is compared with the original
+     * instance returned by <code>next()</code>. Hence, the DOMS server
+     * specified in the configuration must contain at least one object in order
+     * to execute this test successfully.
      */
     @Test
     public void testGetRecord() {
-        try {
 
+        try {
             final String baseID = getTestBaseID();
             final long SINCE_ANCIENT_TIMES = 0;
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
 
             // FIXME! Test various QueryOptions.
-            // TODO: Test the behaviour if base is null
 
             // Expect at least one element in the configured collection.
             final Record anyRecord = storage.next(iteratorKey);
@@ -281,7 +286,14 @@ public class DOMSReadableStorageTest {
     /**
      * Test method for
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getRecords(java.util.List, dk.statsbiblioteket.summa.storage.api.QueryOptions)}
-     * .
+     * . This test fetches the first three records returned by calling
+     * <code>getRecordsModifiedAfter()</code> and <code>next()</code>, retrieves
+     * their ID and tests the
+     * <code>getRecords(List&lt;String&gt; ids, QueryOption option)</code> by
+     * calling it with the retrieved IDs. The returned records are compared with
+     * the original instances returned by <code>next()</code>. Hence, the DOMS
+     * server specified in the configuration must contain at least three objects
+     * in order to execute this test successfully.
      */
     @Test
     public void testGetRecords() {
@@ -294,12 +306,11 @@ public class DOMSReadableStorageTest {
                     SINCE_ANCIENT_TIMES, baseID, null);
 
             // FIXME! Test various QueryOptions.
-            // TODO: Test the behaviour if base is null
 
             // Expect that there are least three elements in the configured
             // collection and collect them and their summa ID.
-            final ArrayList<Record> iteratorReords = new ArrayList<Record>();
-            final ArrayList<String> summaIDs = new ArrayList<String>();
+            final List<Record> iteratorReords = new LinkedList<Record>();
+            final List<String> summaIDs = new LinkedList<String>();
             for (int i = 0; i < 3; i++) {
                 final Record aRecord = storage.next(iteratorKey);
                 iteratorReords.add(aRecord);
@@ -312,7 +323,7 @@ public class DOMSReadableStorageTest {
                     "The records returned by getRecords() are not equal to "
                             + "the ones returned by the iterator.",
                     iteratorReords, recordsFromGet);
-            // TODO: Improve this test.
+
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final PrintStream failureMessage = new PrintStream(bos);
