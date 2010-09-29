@@ -29,8 +29,8 @@ package dk.statsbiblioteket.doms.integration.summa;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -85,27 +85,27 @@ public class DOMSReadableStorage implements Storage {
 
     /**
      * Get the time-stamp for when the latest modification occurred in the DOMS
-     * collection identified by <code>base</code>. This method will resolve
+     * collection view identified by <code>base</code>. This method will resolve
      * <code>base</code> to a DOMS collection, content model entry object and
      * view, using the configuration given to this
      * <code>DOMSReadableStorage</code> instance, and query the DOMS for any
      * changes. Please see the interface documentation for further details.
      * 
-     * @param base
-     *            ID of the collection to read from. I.e. the PID of the DOMS
-     *            collection.
+     * @param summaBaseID
+     *            Summa base ID pointing out the DOMS collection and view to
+     *            read from..
      * @return The time-stamp in milliseconds for the latest modification made
      *         in the collection identified by <code>base</code>.
      * 
      * @see dk.statsbiblioteket.summa.storage.api.ReadableStorage#getModificationTime(java.lang.String)
      */
-    public long getModificationTime(String base) throws IOException {
+    public long getModificationTime(String summaBaseID) throws IOException {
 
         try {
-            if (base != null) {
+            if (summaBaseID != null) {
 
                 final BaseDOMSConfiguration baseConfiguration = baseConfigurations
-                        .get(base);
+                        .get(summaBaseID);
                 final URI collectionPID = baseConfiguration.getCollectionPID();
                 final String viewID = baseConfiguration.getViewID();
                 final URI contentModelEntryObjectPID = baseConfiguration
@@ -135,61 +135,29 @@ public class DOMSReadableStorage implements Storage {
             }
         } catch (Exception exception) {
             throw new IOException(
-                    "Failed retrieving the modification time for base: " + base,
-                    exception);
+                    "Failed retrieving the modification time for base: "
+                            + summaBaseID, exception);
         }
     }
 
-    public long getRecordsModifiedAfter(long timeStamp, String base,
+    public long getRecordsModifiedAfter(long timeStamp, String summaBaseID,
             QueryOptions options) throws IOException {
-
-        // FIXME! allow base == null -> return iterator over all modified
-        // records in all bases
-        // Just hack it for now:
-        if (base == null) {
-            base = "doms_radioTVCollection";
-        }
-
         try {
-            final BaseDOMSConfiguration baseConfiguration = baseConfigurations
-                    .get(base);
-            final URI collectionPID = baseConfiguration.getCollectionPID();
-            final String viewID = baseConfiguration.getViewID();
-            final URI contentModelEntryObjectPID = baseConfiguration
-                    .getContentModelEntryObjectPID();
-
-            // Remember!!! TrackerRecord.getPid() = PID of the entry object
-
-            List<RecordDescription> recordDescriptions = domsClient
-                    .getModifiedEntryObjects(collectionPID, viewID,
-                            contentModelEntryObjectPID, timeStamp, "Published");
-            // FIXME! Hard-coded "Published" state. What about an enum?
-
-            // FIXME! Clarify how QueryOptions should be handled and implement
-            // filter-magic here...
-
-            // Trivial first-shot record and iterator construction.
-            final ArrayList<Record> modifiedRecords = new ArrayList<Record>();
-            for (RecordDescription recordDescription : recordDescriptions) {
-
-                final URI modifiedEntryObjectPID = new URI(recordDescription
-                        .getPid());
-                final byte data[] = domsClient.getViewBundle(
-                        modifiedEntryObjectPID, viewID).getBytes();
-
-                // Prepend the base name to the PID in order to make it possible
-                // for the getRecord() methods to figure out what view to use
-                // when they are invoked. It's ugly, but hey! That's life....
-                final String summaRecordID = base + RECORD_ID_DELIMITER
-                        + modifiedEntryObjectPID.toString();
-                final Record newRecord = new Record(summaRecordID, base, data);
-                modifiedRecords.add(newRecord);
+            List<Record> resultRecords = null;
+            if (summaBaseID != null) {
+                resultRecords = getSingleBaseRecordsModifiedAfter(timeStamp,
+                        summaBaseID, options);
+            } else {
+                resultRecords = new LinkedList<Record>();
+                for (String currentBaseID : baseConfigurations.keySet()) {
+                    resultRecords.addAll(getSingleBaseRecordsModifiedAfter(
+                            timeStamp, currentBaseID, options));
+                }
             }
-
-            return registerIterator(modifiedRecords.iterator());
+            return registerIterator(resultRecords.iterator());
         } catch (Exception exception) {
             throw new IOException("Failed retrieving records from base (base="
-                    + base + ") modified after time-stamp (timeStamp="
+                    + summaBaseID + ") modified after time-stamp (timeStamp="
                     + timeStamp + "), using QueryOptions: " + options,
                     exception);
         }
@@ -255,8 +223,7 @@ public class DOMSReadableStorage implements Storage {
             final String viewBundle = domsClient.getViewBundle(new URI(
                     contentModelEntryObjectPID), viewID);
 
-            return new Record(summaRecordID, base, viewBundle
-                    .getBytes());
+            return new Record(summaRecordID, base, viewBundle.getBytes());
         } catch (Exception exception) {
             throw new IOException("Failed retrieving record (record id = '"
                     + summaRecordID + "', using the query options: " + options);
@@ -301,6 +268,49 @@ public class DOMSReadableStorage implements Storage {
     public String batchJob(String jobName, String base, long minMtime,
             long maxMtime, QueryOptions options) throws IOException {
         throw new NotImplementedException();
+    }
+
+    private List<Record> getSingleBaseRecordsModifiedAfter(long timeStamp,
+            String summaBaseID, QueryOptions options) throws ServerError,
+            URISyntaxException {
+
+        final BaseDOMSConfiguration baseConfiguration = baseConfigurations
+                .get(summaBaseID);
+
+        final URI collectionPID = baseConfiguration.getCollectionPID();
+        final String viewID = baseConfiguration.getViewID();
+        final URI contentModelEntryObjectPID = baseConfiguration
+                .getContentModelEntryObjectPID();
+
+        List<RecordDescription> recordDescriptions = domsClient
+                .getModifiedEntryObjects(collectionPID, viewID,
+                        contentModelEntryObjectPID, timeStamp, "Published");
+        // FIXME! Hard-coded "Published" state. What about an enum?
+
+        // FIXME! Clarify how QueryOptions should be handled and
+        // implement
+        // filter-magic here...
+
+        // Trivial first-shot record and iterator construction.
+        final LinkedList<Record> modifiedRecords = new LinkedList<Record>();
+        for (RecordDescription recordDescription : recordDescriptions) {
+
+            // Get the PID of the modified content model entry object.
+            final URI modifiedEntryCMObjectPID = new URI(recordDescription
+                    .getPid());
+            final byte data[] = domsClient.getViewBundle(
+                    modifiedEntryCMObjectPID, viewID).getBytes();
+
+            // Prepend the base name to the PID in order to make it possible
+            // for the getRecord() methods to figure out what view to use
+            // when they are invoked. It's ugly, but hey! That's life....
+            final String summaRecordID = summaBaseID + RECORD_ID_DELIMITER
+                    + modifiedEntryCMObjectPID.toString();
+            final Record newRecord = new Record(summaRecordID, summaBaseID,
+                    data);
+            modifiedRecords.add(newRecord);
+        }
+        return modifiedRecords;
     }
 
     /**
