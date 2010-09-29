@@ -22,8 +22,7 @@ import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 
 /**
- * @author tsh
- * 
+ * @author &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class DOMSReadableStorageTest {
 
@@ -36,7 +35,11 @@ public class DOMSReadableStorageTest {
     }
 
     /**
+     * Ensure a pristine <code>DOMSReadableStorage</code> instance for each
+     * test.
+     * 
      * @throws java.lang.Exception
+     *             if the <code>DOMSReadableStorage</code> could not be created.
      */
     @Before
     public void setUp() throws Exception {
@@ -44,6 +47,8 @@ public class DOMSReadableStorageTest {
     }
 
     /**
+     * TODO: Remove this method if there is no need for tearing anything down.
+     * 
      * @throws java.lang.Exception
      */
     @After
@@ -54,6 +59,9 @@ public class DOMSReadableStorageTest {
      * Test method for
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getModificationTime(java.lang.String)}
      * .
+     * 
+     * This test will succeed if the time-stamp returned by
+     * <code>getModificationTime(base)</code> returns a value larger than zero.
      */
     @Test
     public void testGetModificationTime() {
@@ -64,7 +72,7 @@ public class DOMSReadableStorageTest {
             assertFalse(
                     "The latest modification time of the collection (base='"
                             + baseID + "') was implausible old.", storage
-                            .getModificationTime(baseID) == 0);
+                            .getModificationTime(baseID) <= 0);
 
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -80,6 +88,8 @@ public class DOMSReadableStorageTest {
      * Test method for
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getModificationTime(java.lang.String)}
      * . Verify that the method handles a <code>null</code> base name properly.
+     * This test will succeed if the time-stamp returned by
+     * <code>getModificationTime(null)</code> returns a value larger than zero.
      */
     @Test
     public void testGetModificationTimeNullBase() {
@@ -87,7 +97,7 @@ public class DOMSReadableStorageTest {
 
             assertFalse("The latest modification time of the collection (base="
                     + "<null>) was implausible old.", storage
-                    .getModificationTime(null) == 0);
+                    .getModificationTime(null) <= 0);
 
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -104,7 +114,10 @@ public class DOMSReadableStorageTest {
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getRecordsModifiedAfter(long, java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)}
      * .
      * 
-     * This test will either work and be successful or break violently.
+     * This test will succeed if <code>getRecordModifiesAfter()</code> returns
+     * an iterator key when it is invoked with a zero time-stamp (the beginning
+     * of time) and the test base ID returned by the
+     * <code>getTestBaseID()</code> helper method in this test class.
      */
     @Test
     public void testGetRecordsModifiedAfter() {
@@ -115,7 +128,40 @@ public class DOMSReadableStorageTest {
                     SINCE_ANCIENT_TIMES, baseID, null);
 
             // FIXME! Test various QueryOptions.
-            // TODO: Test the behaviour if base is null
+
+            // Expect at least one element in the configured collection.
+            assertNotNull(storage.next(iteratorKey));
+
+        } catch (Exception exception) {
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            final PrintStream failureMessage = new PrintStream(bos);
+            failureMessage.print("testNextLong(): Caught exception: ");
+            exception.printStackTrace(failureMessage);
+            failureMessage.flush();
+            fail(bos.toString());
+        }
+    }
+
+    /**
+     * Test method for
+     * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getRecordsModifiedAfter(long, java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)}
+     * .
+     * 
+     * This test will succeed if <code>getRecordModifiesAfter()</code> returns
+     * an iterator key when it is invoked with a zero time-stamp (the beginning
+     * of time) and a <code>null</code> base ID.
+     * <p/>
+     * The method under test is supposed to return an iterator over all modified
+     * elements in all known bases when the base ID is <code>null</code>.
+     */
+    @Test
+    public void testGetRecordsModifiedAfterNullBase() {
+        try {
+            final long SINCE_ANCIENT_TIMES = 0;
+            final long iteratorKey = storage.getRecordsModifiedAfter(
+                    SINCE_ANCIENT_TIMES, null, null);
+
+            // FIXME! Test various QueryOptions.
 
             // Expect at least one element in the configured collection.
             assertNotNull(storage.next(iteratorKey));
