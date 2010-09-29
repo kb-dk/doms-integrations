@@ -170,13 +170,14 @@ public class DOMSReadableStorage implements Storage {
                 .get(iteratorKey);
 
         if (recordIterator == null) {
-            throw new IOException("Unknown record iterator (iterator key: "
-                    + iteratorKey + "). Failed retrieving up to " + maxRecords
-                    + " records.");
+            throw new IllegalArgumentException(
+                    "Unknown record iterator (iterator key: " + iteratorKey
+                            + "). Failed retrieving up to " + maxRecords
+                            + " records.");
         }
 
         try {
-            List<Record> resultList = new LinkedList<Record>();
+            final List<Record> resultList = new LinkedList<Record>();
             int recordCounter = 0;
             while (recordIterator.hasNext() && recordCounter < maxRecords) {
                 resultList.add(recordIterator.next());
@@ -191,12 +192,14 @@ public class DOMSReadableStorage implements Storage {
     }
 
     public Record next(long iteratorKey) throws IOException {
+
         final Iterator<Record> recordIterator = recordIterators
                 .get(iteratorKey);
 
         if (recordIterator == null) {
-            throw new IOException("Unknown record iterator (iterator key: "
-                    + iteratorKey + "). Failed retrieving a record.");
+            throw new IllegalArgumentException(
+                    "Unknown record iterator (iterator key: " + iteratorKey
+                            + "). Failed retrieving a record.");
         }
 
         return recordIterator.next();
@@ -292,7 +295,7 @@ public class DOMSReadableStorage implements Storage {
         // filter-magic here...
 
         // Trivial first-shot record and iterator construction.
-        final LinkedList<Record> modifiedRecords = new LinkedList<Record>();
+        final List<Record> modifiedRecords = new LinkedList<Record>();
         for (RecordDescription recordDescription : recordDescriptions) {
 
             // Get the PID of the modified content model entry object.
