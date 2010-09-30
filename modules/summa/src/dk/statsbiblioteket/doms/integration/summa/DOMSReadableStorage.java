@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.TreeMap;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
@@ -52,14 +53,34 @@ import dk.statsbiblioteket.summa.storage.api.Storage;
 public class DOMSReadableStorage implements Storage {
 
     /**
-     * 
+     * The delimiter inserted between the Summa base name and the DOMS object
+     * UUID when creating the IDs for returned records.
      */
-    private static final String RECORD_ID_DELIMITER = "_";
+    private static final String RECORD_ID_DELIMITER = "§";
 
+    /**
+     * The client, connected to the DOMS server specified by the configuration,
+     * to retrieve objects from.
+     */
     private final DOMSWSClient domsClient;
 
+    /**
+     * <code>Map</code> containing all the configurations for the Summa base
+     * names declared in the configuration passed to the
+     * <code>DOMSReadableStorage</code> constructor.
+     */
     private final Map<String, BaseDOMSConfiguration> baseConfigurations;
 
+    /**
+     * <code>Map</code> containing all record iterators instantiated by methods
+     * returning an iterator over their result sets.
+     * <p/>
+     * FIXME! Currently an iterator and its underlying collection is not
+     * deleted/garbage collected if the iterator is not read to the end, that
+     * is, until a NoSuchElementException is thrown! Clients do not explicitly
+     * indicate when they are done with their iterators which makes it difficult
+     * (i.e. impossible) to determine when it is OK to purge them.
+     */
     private final Map<Long, Iterator<Record>> recordIterators;
 
     /**
@@ -142,6 +163,9 @@ public class DOMSReadableStorage implements Storage {
 
     public long getRecordsModifiedAfter(long timeStamp, String summaBaseID,
             QueryOptions options) throws IOException {
+
+        // FIXME! Add proper query options handling.
+
         try {
             List<Record> resultRecords = null;
             if (summaBaseID != null) {
@@ -176,6 +200,19 @@ public class DOMSReadableStorage implements Storage {
                             + " records.");
         }
 
+        if (recordIterator.hasNext() == false) {
+            // The iterator has reached the end and thus it is obsolete. Let the
+            // wolves have it...
+            recordIterators.remove(iteratorKey);
+
+            // TODO: It may be a good idea to log the iterator key of the
+            // iterator that ran out of elements.
+
+            throw new NoSuchElementException(
+                    "The iterator is out of records (iterator key = "
+                            + iteratorKey + ")");
+        }
+
         try {
             final List<Record> resultList = new LinkedList<Record>();
             int recordCounter = 0;
@@ -183,11 +220,18 @@ public class DOMSReadableStorage implements Storage {
                 resultList.add(recordIterator.next());
                 recordCounter++;
             }
+
             return resultList;
-        } catch (Exception exception) {
-            throw new IOException("Failed retrieving up to " + maxRecords
-                    + " elements from the record iterator (iterator key: "
-                    + iteratorKey + ")");
+        } catch (NoSuchElementException noSuchElementException) {
+            // The iterator has reached the end and thus it is obsolete. Let the
+            // wolves have it...
+            recordIterators.remove(iteratorKey);
+
+            // TODO: It may be a good idea to log the iterator key of the
+            // iterator that ran out of elements.
+
+            // Re-throw.
+            throw noSuchElementException;
         }
     }
 
@@ -202,7 +246,19 @@ public class DOMSReadableStorage implements Storage {
                             + "). Failed retrieving a record.");
         }
 
-        return recordIterator.next();
+        try {
+            return recordIterator.next();
+        } catch (NoSuchElementException noSuchElementException) {
+            // The iterator has reached the end and thus it is obsolete. Let the
+            // wolves have it...
+            recordIterators.remove(iteratorKey);
+
+            // TODO: It may be a good idea to log the iterator key of the
+            // iterator that ran out of elements.
+
+            // Re-throw.
+            throw noSuchElementException;
+        }
     }
 
     public Record getRecord(String summaRecordID, QueryOptions options)
@@ -273,7 +329,27 @@ public class DOMSReadableStorage implements Storage {
         throw new NotImplementedException();
     }
 
-    // FIXME! javadoc
+    /**
+     * Get all the records modified later than the given time-stamp, for a given
+     * Summa base.
+     * 
+     * @param timeStamp
+     *            the time-stamp after which the modified records must be
+     *            selected.
+     * @param summaBaseID
+     *            the base to look for modifications in.
+     * @param options
+     *            <code>QueryOptions</code> containing further selection
+     *            criteria specified by the caller.
+     * @return a list of records modified after <code>timeStamp</code> and
+     *         matching the specified <code>options</code>.
+     * @throws ServerError
+     *             if any errors are encountered when communicating with the
+     *             DOMS.
+     * @throws URISyntaxException
+     *             if a PID, returned by the DOMS, is an invalid
+     *             <code>URI</code>. This is quite unlikely to happen.
+     */
     private List<Record> getSingleBaseRecordsModifiedAfter(long timeStamp,
             String summaBaseID, QueryOptions options) throws ServerError,
             URISyntaxException {
@@ -292,8 +368,7 @@ public class DOMSReadableStorage implements Storage {
         // FIXME! Hard-coded "Published" state. What about an enum?
 
         // FIXME! Clarify how QueryOptions should be handled and
-        // implement
-        // filter-magic here...
+        // implement filter-magic here...
 
         // Trivial first-shot record and iterator construction.
         final List<Record> modifiedRecords = new LinkedList<Record>();
@@ -431,7 +506,6 @@ public class DOMSReadableStorage implements Storage {
             throw new ConfigurationException("base (base ID = '" + baseID
                     + "' has already been associated with a" + " DOMS view.");
         }
-
     }
 
     /**
@@ -450,8 +524,10 @@ public class DOMSReadableStorage implements Storage {
      */
     private synchronized long registerIterator(Iterator<Record> iterator)
             throws Exception {
+
         long iteratorKey = Math.round(Long.MAX_VALUE * Math.random());
         long emergencyBrake = 0;
+
         while (recordIterators.containsKey(iteratorKey)) {
             iteratorKey = Math.round(Long.MAX_VALUE * Math.random());
             emergencyBrake++;
@@ -459,7 +535,6 @@ public class DOMSReadableStorage implements Storage {
                 throw new Exception("Unable to produce an iterator key.");
             }
         }
-        // FIXME! Watch out! Currently, nobody removes the iterators again!
         recordIterators.put(iteratorKey, iterator);
         return iteratorKey;
     }
