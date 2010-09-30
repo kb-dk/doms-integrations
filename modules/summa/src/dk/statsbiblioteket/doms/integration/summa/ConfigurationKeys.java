@@ -27,23 +27,51 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 /**
- * @author &lt;tsh@statsbiblioteket.dk&gt;
+ * This class defines a set of constants referring to elements which must be
+ * declared in a configuration for creation of a
+ * <code>DOMSReadableStorage</code> instance.
  * 
+ *@author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class ConfigurationKeys {
 
     /**
-     * Storage &quot;base&quot; for the radio-tv collection.
-     * <p/>
-     * TODO: STORAGE_BASE_ID is probably too generic - refactoring may be
-     * relevant.
+     * Key for the list of base declarations.
      */
     public static final String ACCESSIBLE_COLLECTION_BASES = "accessibleCollectionBases";
+
+    /**
+     * Key for the base name/id element in a base declaration.
+     */
     public static final String COLLECTION_BASE_ID = "collectionBaseID";
+
+    /**
+     * Key for the collection PID element in a base declaration.
+     */
     public static final String COLLECTION_PID = "collectionPID";
+
+    /**
+     * Key for the content model entry object PID element in a base declaration.
+     */
     public static final String COLLECTION_ENTRY_CONTENT_MODEL_PID = "collectionEntryContentModelPID";
+
+    /**
+     * Key for the view ID element in a base declaration.
+     */
     public static final String VIEW_ID = "viewID";
+
+    /**
+     * Key for the DOMS user name element in the root configuration.
+     */
     public static final String DOMS_USER_NAME = "DOMSUserName";
+
+    /**
+     * Key for the DOMS password element in the root configuration.
+     */
     public static final String DOMS_PASSWORD = "DOMSPassword";
+
+    /**
+     * Key for the DOMS web service end-point element in the root configuration.
+     */
     public static final String DOMS_API_WEBSERVICE_URL = "DOMSWebserviceURL";
 }

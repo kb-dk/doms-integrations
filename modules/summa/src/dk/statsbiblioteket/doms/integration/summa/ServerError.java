@@ -27,6 +27,10 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 /**
+ * Exception to be thrown if any problems were encountered while communicating
+ * with the DOMS server.
+ * 
+ * <p/>
  * TODO: This class is a copy from the radio-tv example ingester project. It
  * should be moved into some utility library some time!
  * <p/>
@@ -34,45 +38,38 @@ package dk.statsbiblioteket.doms.integration.summa;
  * TODO! Rename this class; ServerError is a pretty bad name for an exception...
  * <p/>
  * 
- * @author &lt;tsh@statsbiblioteket.dk&gt;
+ *@author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class ServerError extends Exception {
 
-    /**
-     * 
-     */
     private static final long serialVersionUID = -5490820003022778643L;
 
-    /**
-     *
-     */
     public ServerError() {
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param message
+     *            a message containing details on why this exception was thrown.
      */
     public ServerError(String message) {
         super(message);
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param cause
+     *            the exception that caused this exception to be thrown.
      */
     public ServerError(Throwable cause) {
         super(cause);
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param message
+     *            a message containing details on why this exception was thrown.
      * @param cause
+     *            the exception that caused this exception to be thrown.
      */
     public ServerError(String message, Throwable cause) {
         super(message, cause);
-        // TODO Auto-generated constructor stub
     }
-
 }
