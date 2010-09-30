@@ -6,14 +6,15 @@ package dk.statsbiblioteket.doms.integration.summa;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -26,12 +27,26 @@ import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSuppor
  */
 public class DOMSReadableStorageTest {
 
+    /**
+     * Path to the configuration file used by the tests in this test class.
+     */
     private static final String TEST_CONFIGURATION_XML_FILE_PATH = "./config/radioTVTestConfiguration.xml";
+
+    /**
+     * The current <code>DOMSReadableStorage</code> instance under test.
+     */
     private DOMSReadableStorage storage;
+
+    /**
+     * The test configuration loaded by the constructor, from which the
+     * individual test methods may fetch information which is necessary for
+     * their execution.
+     */
     private final Configuration testConfiguration;
 
     public DOMSReadableStorageTest() {
-        testConfiguration = getConfiguration();
+        testConfiguration = Configuration
+                .load(TEST_CONFIGURATION_XML_FILE_PATH);
     }
 
     /**
@@ -47,15 +62,6 @@ public class DOMSReadableStorageTest {
     }
 
     /**
-     * TODO: Remove this method if there is no need for tearing anything down.
-     * 
-     * @throws java.lang.Exception
-     */
-    @After
-    public void tearDown() throws Exception {
-    }
-
-    /**
      * Test method for
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getModificationTime(java.lang.String)}
      * .
@@ -67,7 +73,7 @@ public class DOMSReadableStorageTest {
     public void testGetModificationTime() {
         try {
 
-            final String baseID = getTestBaseID();
+            final String baseID = getFirstBaseID(testConfiguration);
 
             assertFalse(
                     "The latest modification time of the collection (base='"
@@ -122,7 +128,7 @@ public class DOMSReadableStorageTest {
     @Test
     public void testGetRecordsModifiedAfter() {
         try {
-            final String baseID = getTestBaseID();
+            final String baseID = getFirstBaseID(testConfiguration);
             final long SINCE_ANCIENT_TIMES = 0;
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
@@ -192,13 +198,41 @@ public class DOMSReadableStorageTest {
     public void testNextLongInt() {
 
         try {
-            final String baseID = getTestBaseID();
+            final String baseID = getFirstBaseID(testConfiguration);
             final long SINCE_ANCIENT_TIMES = 0;
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
 
-            // Expect at least one element in the configured collection.
+            // Expect at least one element in the configured collection and get
+            // all elements.
             assertFalse(storage.next(iteratorKey, Integer.MAX_VALUE).isEmpty());
+
+            try {
+                // Verify that the iterator is depleted.
+                storage.next(iteratorKey, Integer.MAX_VALUE);
+
+                // Oops. the iterator was supposed to be depleted.
+                fail("The iterator (key = " + iteratorKey
+                        + ") was not empty nor deleted from the storage.");
+
+            } catch (IllegalArgumentException illegalArgumentException) {
+                assertTrue(true);
+            } catch (NoSuchElementException noSuchElementException) {
+                // No more elements... that was just what we wanted.
+            }
+
+            try {
+                // Expect that the iterator we just emptied has been removed
+                // from the storage.
+                storage.next(iteratorKey, Integer.MAX_VALUE);
+            } catch (IllegalArgumentException illegalArgumentException) {
+                assertTrue(true);
+            } catch (NoSuchElementException noSuchElementException) {
+                // Oops. the iterator was supposed to be removed from the
+                // storage.
+                fail("The iterator (key = " + iteratorKey
+                        + ") was not deleted from the storage.");
+            }
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final PrintStream failureMessage = new PrintStream(bos);
@@ -225,14 +259,45 @@ public class DOMSReadableStorageTest {
     public void testNextLong() {
         try {
             // Get an iterator over all modified records.
-            final String baseID = getTestBaseID();
+            final String baseID = getFirstBaseID(testConfiguration);
             final long SINCE_ANCIENT_TIMES = 0;
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
 
-            // Just trash the returned record. There is no way to validate it
-            // anyway.
-            assertNotNull(storage.next(iteratorKey));
+            try {
+
+                // Make sure that the iterator is depleted...
+                for (int i = 0; i <= Integer.MAX_VALUE; i++) {
+                    // Just trash the returned record. There is no way to
+                    // validate it
+                    // anyway.
+                    assertNotNull(storage.next(iteratorKey));
+                }
+
+                fail("The iterator (key = " + iteratorKey
+                        + ") did not terminate properly.");
+            } catch (NoSuchElementException noSuchElementException) {
+                // Fine. That is just what we want...
+            }
+
+            try {
+                // Expect that the iterator we just emptied has been removed
+                // from the storage.
+                storage.next(iteratorKey);
+
+                // Oops. the iterator was supposed to be depleted.
+                fail("The iterator (key = " + iteratorKey
+                        + ") was not empty nor deleted from the storage.");
+
+            } catch (IllegalArgumentException illegalArgumentException) {
+                // Fine, the iterator was unknown to the storage.
+                assertTrue(true);
+            } catch (NoSuchElementException noSuchElementException) {
+                // Oops. the iterator was supposed to be removed from the
+                // storage.
+                fail("The iterator (key = " + iteratorKey
+                        + ") was not deleted from the storage.");
+            }
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();
             final PrintStream failureMessage = new PrintStream(bos);
@@ -258,7 +323,7 @@ public class DOMSReadableStorageTest {
     public void testGetRecord() {
 
         try {
-            final String baseID = getTestBaseID();
+            final String baseID = getFirstBaseID(testConfiguration);
             final long SINCE_ANCIENT_TIMES = 0;
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
@@ -300,7 +365,7 @@ public class DOMSReadableStorageTest {
         try {
 
             // Get an iterator over all modified records.
-            final String baseID = getTestBaseID();
+            final String baseID = getFirstBaseID(testConfiguration);
             final long SINCE_ANCIENT_TIMES = 0;
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
@@ -334,13 +399,20 @@ public class DOMSReadableStorageTest {
         }
     }
 
-    private Configuration getConfiguration() {
-        return Configuration.load(TEST_CONFIGURATION_XML_FILE_PATH);
-    }
-
-    private String getTestBaseID()
+    /**
+     * Fetch the Summa base ID from the first base configuration found in
+     * <code>configuration</code>.
+     * 
+     * @return The Summa base ID of the first base configuration found in
+     *         <code>configuration</code>.
+     * @throws SubConfigurationsNotSupportedException
+     *             if the configuration does not contain a
+     *             <code>accessibleCollectionBases</code> section;
+     */
+    private String getFirstBaseID(Configuration configuration)
             throws SubConfigurationsNotSupportedException {
-        final List<Configuration> baseConfigurations = testConfiguration
+
+        final List<Configuration> baseConfigurations = configuration
                 .getSubConfigurations(ConfigurationKeys.ACCESSIBLE_COLLECTION_BASES);
 
         assertFalse(
@@ -351,5 +423,4 @@ public class DOMSReadableStorageTest {
         return baseConfigurations.get(0).getString(
                 ConfigurationKeys.COLLECTION_BASE_ID);
     }
-
 }
