@@ -1,0 +1,348 @@
+<xproperties>
+    <!-- summarise.debug must be either "true" or "false" in
+         order to use this config. This comtrol dumping of a
+         sample of the records. -->
+    <xproperties>
+        <entry>
+            <key>summa.control.service.port</key>
+            <value class="string">${site.portrange}23</value>
+        </entry>
+        <entry>
+            <key>summa.control.service.registry.port</key>
+            <value class="string">${site.portrange}00</value>
+        </entry>
+
+        <!-- The class implementing the Service interface -->
+        <entry>
+            <key>control.launcher.service.class</key>
+            <value class="string">
+                dk.statsbiblioteket.summa.control.service.FilterService
+            </value>
+        </entry>
+
+        <!--
+           Configuration for the Faceted Indexer
+        -->
+        <entry>
+            <key>filter.name</key>
+            <value class="string">${site.id} faceted indexer</value>
+        </entry>
+        <entry>
+            <key>filtercontrol.sequential</key>
+            <value class="boolean">true</value>
+        </entry>
+        <entry>
+            <key>filtercontrol.chains</key>
+            <value class="list">
+                <xproperties>
+                    <entry>
+                        <key>filter.name</key>
+                        <value class="string">SingleChain</value>
+                    </entry>
+                    <entry>
+                        <key>summa.filter.sequence.filters</key>
+                        <value class="list">
+
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">StorageReader</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.storage.api.filter.RecordReader</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.storage.recordreader.startfromscratch</key>
+                                    <value class="boolean">true</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.storage.recordreader.maxread.records</key>
+                                    <value class="int">-1</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.storage.recordreader.base</key>
+                                    <value class="string"/>
+                                </entry>
+                                <entry>
+                                    <key>summa.storage.recordreader.expandchildren</key>
+                                    <value class="boolean">true</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.storage.recordreader.expandparents</key>
+                                    <value class="boolean">true</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.rpc.vendor</key>
+                                    <value class="string">//localhost:${site.portrange}00/${site.id}-storage</value>
+                                </entry>
+                            </xproperties>
+
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">dumper</value>
+                                </entry>
+                                <entry>
+                                    <key>filter.enabled</key>
+                                    <value class="string">${summarise.debug}</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.common.filter.object.DumpFilter</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.dumpfilter.outputfolder</key>
+                                    <value class="string">dump/index_0_prediscard</value>
+                                </entry>
+                            </xproperties>
+
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">DiscardRelatives</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.common.filter.object.DiscardRelativesFilter</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.relativesfilter.discard.hasparent</key>
+                                    <value class="boolean">true</value>
+                                </entry>
+                            </xproperties>
+
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">dumper</value>
+                                </entry>
+                                <entry>
+                                    <key>filter.enabled</key>
+                                    <value class="string">${summarise.debug}</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.common.filter.object.DumpFilter</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.dumpfilter.outputfolder</key>
+                                    <value class="string">dump/index_1_premux</value>
+                                </entry>
+                            </xproperties>
+
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">Muxer</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.common.filter.object.MUXFilter</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.muxfilter.filters</key>
+                                    <value class="list">
+
+                                        <xproperties>
+                                            <entry>
+                                                <key>filter.name</key>
+                                                <value class="string">${site.id} record sequence</value>
+                                            </entry>
+                                            <entry>
+                                                <key>summa.muxfilter.filter.bases</key>
+                                                <value class="string">${site.id}RadioTV</value>
+                                            </entry>
+                                            <entry>
+                                                <key>summa.muxfilter.filter.instances</key>
+                                                <value class="int">3</value>
+                                            </entry>
+                                            <entry>
+                                                <key>summa.muxfilter.filter.class</key>
+                                                <value class="string">dk.statsbiblioteket.summa.common.filter.object.FilterSequence</value>
+                                            </entry>
+                                            <entry>
+                                                <key>summa.filter.sequence.filters</key>
+                                                <value class="list">
+
+                                                    <xproperties>
+                                                        <entry>
+                                                            <key>filter.name</key>
+                                                            <value class="string">${site.id} record transformer</value>
+                                                        </entry>
+                                                        <entry>
+                                                            <key>summa.filter.sequence.filterclass</key>
+                                                            <value class="string">dk.statsbiblioteket.summa.index.XMLTransformer</value>
+                                                        </entry>
+                                                        <entry>
+                                                            <key>summa.xmltransformer.xslt</key>
+                                                            <value class="string">xslt/index/${site.id}/${site.id}RadioTV_index.xsl</value>
+                                                        </entry>
+                                                        <entry>
+                                                            <key>summa.xmltransformer.ignorexmlnamespaces</key>
+                                                            <value class="boolean">false</value>
+                                                        </entry>
+                                                    </xproperties>
+
+                                                </value>
+                                            </entry>
+                                        </xproperties>
+
+                                    </value>
+                                </entry>
+                            </xproperties>
+
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">dumper</value>
+                                </entry>
+                                <entry>
+                                    <key>filter.enabled</key>
+                                    <value class="string">${summarise.debug}</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.common.filter.object.DumpFilter</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.dumpfilter.outputfolder</key>
+                                    <value class="string">dump/index_3_preold2new</value>
+                                </entry>
+                            </xproperties>
+
+
+                            <!--                            <xproperties>
+                                                            <entry>
+                                                                <key>filter.name</key>
+                                                                <value class="string">OldToNewTransformer</value>
+                                                            </entry>
+                                                            <entry>
+                                                                <key>summa.filter.sequence.filterclass</key>
+                                                                <value class="string">dk.statsbiblioteket.summa.index.XMLTransformer</value>
+                                                            </entry>
+                                                            <entry>
+                                                                <key>summa.xmltransformer.xslt</key>
+                                                                <value class="string">LegacyToSummaDocumentXML.xslt</value>
+                                                            </entry>
+                                                        </xproperties>
+                            -->
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">dumper</value>
+                                </entry>
+                                <entry>
+                                    <key>filter.enabled</key>
+                                    <value class="string">${summarise.debug}</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.common.filter.object.DumpFilter</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.dumpfilter.outputfolder</key>
+                                    <value class="string">dump/index_4_predocumentcreator</value>
+                                </entry>
+                            </xproperties>
+
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">DocumentCreator</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.index.lucene.StreamingDocumentCreator</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.descriptorsetup</key>
+                                    <value class="xproperties">
+                                        <entry>
+                                            <key>summa.common.indexdescriptor.absolutelocation</key>
+                                            <value class="string">resources/${site.id}_IndexDescriptor.xml</value>
+                                        </entry>
+                                    </value>
+                                </entry>
+                            </xproperties>
+
+                            <xproperties>
+                                <entry>
+                                    <key>filter.name</key>
+                                    <value class="string">IndexUpdate</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.filter.sequence.filterclass</key>
+                                    <value class="string">dk.statsbiblioteket.summa.index.IndexControllerImpl</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.indexrootlocation</key>
+                                    <value class="string">index/${site.id}</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.createnewindex</key>
+                                    <value class="boolean">true</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.commitmaxdocuments</key>
+                                    <value class="int">-1</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.consolidatetimeout</key>
+                                    <value class="int">-1</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.consolidatemaxdocuments</key>
+                                    <value class="int">-1</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.consolidatemaxcommits</key>
+                                    <value class="int">-1</value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.consolidateonclose</key>
+                                    <value class="boolean">true</value>
+                                </entry>
+
+                                <entry>
+                                    <key>summa.index.descriptorsetup</key>
+                                    <value class="xproperties">
+                                        <entry>
+                                            <key>summa.common.indexdescriptor.absolutelocation</key>
+                                            <value class="string">resources/${site.id}_IndexDescriptor.xml</value>
+                                        </entry>
+                                    </value>
+                                </entry>
+                                <entry>
+                                    <key>summa.index.manipulators</key>
+                                    <value class="list">
+
+                                        <xproperties>
+                                            <entry>
+                                                <key>summa.index.manipulatorclass</key>
+                                                <value class="string">dk.statsbiblioteket.summa.index.lucene.LuceneManipulator</value>
+                                            </entry>
+                                        </xproperties>
+
+                                        <xproperties>
+                                            <entry>
+                                                <key>summa.index.manipulatorclass</key>
+                                                <value class="string">dk.statsbiblioteket.summa.facetbrowser.FacetManipulator</value>
+                                            </entry>
+                                            <entry>
+                                                <!-- Set this property to false to enable iterative updates,
+                                        true for best performance on full index builds -->
+                                                <key>summa.facet.skipfacetonupdate</key>
+                                                <value class="string">true</value>
+                                            </entry>
+                                        </xproperties>
+                                    </value>
+                                </entry>
+                            </xproperties>
+                        </value>
+                    </entry>
+                </xproperties>
+            </value>
+        </entry>
+    </xproperties>
+</xproperties>
