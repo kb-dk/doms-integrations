@@ -32,12 +32,27 @@ import java.net.URI;
  * A <code>BaseDOMSConfiguration</code> instance contains the necessary
  * information for describing a Summa <code>base</code> in DOMS terms.
  * 
- * @author &lt;tsh@statsbiblioteket.dk&gt;
+ *@author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class BaseDOMSConfiguration {
 
+    /**
+     * PID (UUID) of the DOMS collection associated with the Summa base which
+     * this <code>BaseDOMSConfiguration</code> is associated with.
+     */
     private final URI collectionPID;
+
+    /**
+     * PID (UUID) of the DOMS content model entry object which identifies the
+     * anchor/root objects which the Summa base is associated with.
+     */
     private final URI contentModelEntryObjectPID;
+
+    /**
+     * ID of the view which the DOMS must use when extracting objects for
+     * clients requesting objects from the Summa base associated with this
+     * <code>BaseDOMSConfiguration</code> instance.
+     */
     private final String viewID;
 
     /**

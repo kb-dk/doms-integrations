@@ -27,49 +27,46 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 /**
+ * This exception is thrown if a method could not find an object requested by
+ * the caller.
+ * 
+ * <p/>
  * TODO: This class is a copy from the radio-tv example ingester project. It
  * should be moved into some utility library some time!
  * <p/>
  * 
- * @author &lt;tsh@statsbiblioteket.dk&gt;
+ *@author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class NoObjectFound extends Exception {
 
-    /**
-     *
-     */
     private static final long serialVersionUID = -3639478367508534640L;
 
-    /**
-     *
-     */
     public NoObjectFound() {
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param message
+     *            a message containing details on why this exception was thrown.
      */
     public NoObjectFound(String message) {
         super(message);
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param cause
+     *            the exception that caused this exception to be thrown.
      */
     public NoObjectFound(Throwable cause) {
         super(cause);
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param message
+     *            a message containing details on why this exception was thrown.
      * @param cause
+     *            the exception that caused this exception to be thrown.
      */
     public NoObjectFound(String message, Throwable cause) {
         super(message, cause);
-        // TODO Auto-generated constructor stub
     }
-
 }

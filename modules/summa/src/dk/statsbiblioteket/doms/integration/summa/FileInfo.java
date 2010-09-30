@@ -30,8 +30,7 @@ import java.net.URI;
 import java.net.URL;
 
 /**
- * @author &lt;tsh@statsbiblioteket.dk&gt;
- * 
+ *@author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class FileInfo {
 

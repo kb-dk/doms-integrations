@@ -52,7 +52,7 @@ import dk.statsbiblioteket.util.xml.DOM;
  * Utility class for making it simple and easy to access the DOMS server
  * webservice.
  * 
- * @author &lt;tsh@statsbiblioteket.dk&gt;
+ *@author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class DOMSWSClient {
 
