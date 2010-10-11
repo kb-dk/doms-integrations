@@ -91,15 +91,15 @@ public class DOMSWSClient {
      * @param templatePID
      *            PID identifying the template object to use.
      * @return PID of the created object.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if the object creation failed.
      */
     public String createObjectFromTemplate(String templatePID)
-            throws ServerError {
+            throws ServerOperationFailed {
         try {
             return domsAPI.newObject(templatePID);
         } catch (Exception e) {
-            throw new ServerError(
+            throw new ServerOperationFailed(
                     "Failed creating a new object from template: "
                             + templatePID, e);
         }
@@ -117,12 +117,12 @@ public class DOMSWSClient {
      *            File location, checksum and so on for the physical file
      *            associated with the object.
      * @return PID of the created file object in the DOMS.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if the object creation failed.
      * @see FileInfo
      */
     public String createFileObject(String templatePID, FileInfo fileInfo)
-            throws ServerError {
+            throws ServerOperationFailed {
 
         try {
             final String fileObjectPID = createObjectFromTemplate(templatePID);
@@ -135,7 +135,7 @@ public class DOMSWSClient {
             return fileObjectPID;
 
         } catch (Exception e) {
-            throw new ServerError(
+            throw new ServerOperationFailed(
                     "Failed creating a new file object (template PID: "
                             + templatePID + ") from this file information: "
                             + fileInfo, e);
@@ -153,18 +153,18 @@ public class DOMSWSClient {
      * @throws NoObjectFound
      *             if there does not exist DOMS file object associated with
      *             <code>fileURL</code>.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if any errors are encountered while looking up the file
      *             object.
      */
     public String getFileObjectPID(URL fileURL) throws NoObjectFound,
-            ServerError {
+            ServerOperationFailed {
 
         String pid = null;
         try {
             pid = domsAPI.getFileObjectWithURL(fileURL.toString());
         } catch (Exception exception) {
-            throw new ServerError("Unable to retrieve file object with URL: "
+            throw new ServerOperationFailed("Unable to retrieve file object with URL: "
                     + fileURL, exception);
         }
         if (pid == null) {
@@ -184,11 +184,11 @@ public class DOMSWSClient {
      * @param datastreamID
      *            ID of the datastream to get the contents of.
      * @return <code>Document</code> containing the datastream XML contents.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if the datastream contents cannot be retrieved.
      */
     public Document getDataStream(String objectPID, String datastreamID)
-            throws ServerError {
+            throws ServerOperationFailed {
         try {
             final String datastreamXML = domsAPI.getDatastreamContents(
                     objectPID, datastreamID);
@@ -205,7 +205,7 @@ public class DOMSWSClient {
 
             return dataStream;
         } catch (Exception exception) {
-            throw new ServerError("Failed getting datastream (ID: "
+            throw new ServerOperationFailed("Failed getting datastream (ID: "
                     + datastreamID + ") contents from object (PID: "
                     + objectPID + ")", exception);
         }
@@ -225,17 +225,17 @@ public class DOMSWSClient {
      * @param newDataStreamContents
      *            <code>Document</code> containing the new datastream XML
      *            contents.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if the datastream contents cannot be updated.
      */
     public void updateDataStream(String objectPID, String dataStreamID,
-            Document newDataStreamContents) throws ServerError {
+            Document newDataStreamContents) throws ServerOperationFailed {
         try {
             domsAPI.modifyDatastream(objectPID, dataStreamID, DOM
                     .domToString(newDataStreamContents));
 
         } catch (Exception exception) {
-            throw new ServerError("Failed updating datastream (ID: "
+            throw new ServerOperationFailed("Failed updating datastream (ID: "
                     + dataStreamID + ") contents from object (PID: "
                     + objectPID + ")", exception);
         }
@@ -256,16 +256,16 @@ public class DOMSWSClient {
      *            model for the source object.
      * @param targetPID
      *            ID of the target ("to") object of the relation.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if the relation cannot be added.
      */
     public void addObjectRelation(String sourcePID, String relationType,
-            String targetPID) throws ServerError {
+            String targetPID) throws ServerOperationFailed {
         try {
             domsAPI.addRelation(sourcePID, "info:fedora/" + sourcePID,
                     relationType, "info:fedora/" + targetPID);
         } catch (Exception exception) {
-            throw new ServerError("Failed creating object relation (type: "
+            throw new ServerOperationFailed("Failed creating object relation (type: "
                     + relationType + ") from the source object (PID: "
                     + sourcePID + ") to the target object (PID: " + targetPID
                     + ")", exception);
@@ -278,14 +278,14 @@ public class DOMSWSClient {
      * 
      * @param pidsToPublish
      *            <code>List</code> of PIDs for the objects to publish.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if any errors are encountered while publishing the objects.
      */
-    public void publishObjects(List<String> pidsToPublish) throws ServerError {
+    public void publishObjects(List<String> pidsToPublish) throws ServerOperationFailed {
         try {
             domsAPI.markPublishedObject(pidsToPublish);
         } catch (Exception exception) {
-            throw new ServerError("Failed marking objects as published. PIDs: "
+            throw new ServerOperationFailed("Failed marking objects as published. PIDs: "
                     + pidsToPublish, exception);
         }
     }
@@ -307,17 +307,17 @@ public class DOMSWSClient {
      * @param entryContentModelPID
      *            PID of the entry content model for the query.
      * @return the time-stamp in milliseconds for the latest modification.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if the time-stamp cannot be retrieved.
      */
     public long getModificationTime(URI collectionPID, String viewID,
-            URI entryContentModelPID) throws ServerError {
+            URI entryContentModelPID) throws ServerOperationFailed {
         try {
             return domsAPI.getLatestModified(collectionPID.toString(), viewID,
                     entryContentModelPID.toString());
 
         } catch (Exception exception) {
-            throw new ServerError(
+            throw new ServerOperationFailed(
                     "Failed retrieving the modification time-stamp for the collection with this PID: "
                             + collectionPID, exception);
         }
@@ -334,17 +334,17 @@ public class DOMSWSClient {
      * @param entryContentModelPID
      * @param timeStamp
      * @return
-     * @throws ServerError
+     * @throws ServerOperationFailed
      */
     public List<RecordDescription> getModifiedEntryObjects(URI collectionPID,
             String viewID, URI entryContentModelPID, long timeStamp,
-            String objectState) throws ServerError {
+            String objectState) throws ServerOperationFailed {
         try {
 
             return domsAPI.getIDsModified(timeStamp, collectionPID.toString(),
                     viewID, entryContentModelPID.toString(), objectState);
         } catch (Exception exception) {
-            throw new ServerError("Failed retrieving objects (collectionPID="
+            throw new ServerOperationFailed("Failed retrieving objects (collectionPID="
                     + collectionPID + ") associated with the specified view "
                     + "(viewID=" + viewID + ") and entry content model ("
                     + entryContentModelPID + "), modified later than the "
@@ -357,17 +357,17 @@ public class DOMSWSClient {
      * @param entryObjectPID
      * @param viewID
      * @return
-     * @throws ServerError
+     * @throws ServerOperationFailed
      */
     public String getViewBundle(URI entryObjectPID, String viewID)
-            throws ServerError {
+            throws ServerOperationFailed {
         try {
             final String entryObjectPIDString = entryObjectPID.toString();
             ViewBundle viewBundle = domsAPI.getViewBundle(entryObjectPIDString,
                     viewID);
             return viewBundle.getContents();
         } catch (Exception exception) {
-            throw new ServerError("Failed retrieving the view record (viewID="
+            throw new ServerOperationFailed("Failed retrieving the view record (viewID="
                     + viewID + ") containing the specified object (objectPID="
                     + entryObjectPID + ").", exception);
         }
