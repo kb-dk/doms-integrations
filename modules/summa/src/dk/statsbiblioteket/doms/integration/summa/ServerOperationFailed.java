@@ -35,41 +35,39 @@ package dk.statsbiblioteket.doms.integration.summa;
  * should be moved into some utility library some time!
  * <p/>
  * 
- * TODO! Rename this class; ServerError is a pretty bad name for an exception...
- * <p/>
- * 
- *@author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
+ * @author &lt;tsh@statsbiblioteket.dk&gt; Thomas Skou Hansen
  */
-public class ServerError extends Exception {
+public class ServerOperationFailed extends Exception {
 
+    /**
+     * Version UUID for serialisation.
+     */
     private static final long serialVersionUID = -5490820003022778643L;
 
-    public ServerError() {
+    /**
+     * @see java.lang.Exception#Exception()
+     */
+    public ServerOperationFailed() {
     }
 
     /**
-     * @param message
-     *            a message containing details on why this exception was thrown.
+     * @see java.lang.Exception#Exception(String)
      */
-    public ServerError(String message) {
+    public ServerOperationFailed(String message) {
         super(message);
     }
 
     /**
-     * @param cause
-     *            the exception that caused this exception to be thrown.
+     * @see java.lang.Exception#Exception(Throwable)
      */
-    public ServerError(Throwable cause) {
+    public ServerOperationFailed(Throwable cause) {
         super(cause);
     }
 
     /**
-     * @param message
-     *            a message containing details on why this exception was thrown.
-     * @param cause
-     *            the exception that caused this exception to be thrown.
+     * @see java.lang.Exception#Exception(String, Throwable)
      */
-    public ServerError(String message, Throwable cause) {
+    public ServerOperationFailed(String message, Throwable cause) {
         super(message, cause);
     }
 }

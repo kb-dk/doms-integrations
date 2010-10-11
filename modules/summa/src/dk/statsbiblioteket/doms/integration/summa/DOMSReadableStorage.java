@@ -343,7 +343,7 @@ public class DOMSReadableStorage implements Storage {
      *            criteria specified by the caller.
      * @return a list of records modified after <code>timeStamp</code> and
      *         matching the specified <code>options</code>.
-     * @throws ServerError
+     * @throws ServerOperationFailed
      *             if any errors are encountered when communicating with the
      *             DOMS.
      * @throws URISyntaxException
@@ -351,7 +351,7 @@ public class DOMSReadableStorage implements Storage {
      *             <code>URI</code>. This is quite unlikely to happen.
      */
     private List<Record> getSingleBaseRecordsModifiedAfter(long timeStamp,
-            String summaBaseID, QueryOptions options) throws ServerError,
+            String summaBaseID, QueryOptions options) throws ServerOperationFailed,
             URISyntaxException {
 
         final BaseDOMSConfiguration baseConfiguration = baseConfigurations
