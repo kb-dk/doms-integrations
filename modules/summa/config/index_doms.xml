@@ -151,7 +151,7 @@
                                             </entry>
                                             <entry>
                                                 <key>summa.muxfilter.filter.bases</key>
-                                                <value class="string">${site.id}RadioTV</value>
+                                                <value class="string">${site.id}_radioTVCollection</value>
                                             </entry>
                                             <entry>
                                                 <key>summa.muxfilter.filter.instances</key>
