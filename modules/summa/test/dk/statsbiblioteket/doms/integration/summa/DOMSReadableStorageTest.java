@@ -23,14 +23,14 @@ import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 
 /**
- * @author &lt;tsh@statsbiblioteket.dk&gt;
+ * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class DOMSReadableStorageTest {
 
     /**
      * Path to the configuration file used by the tests in this test class.
      */
-    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "./config/radioTVTestConfiguration.xml";
+    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "modules/summa/config/radioTVTestConfiguration.xml";
 
     /**
      * The current <code>DOMSReadableStorage</code> instance under test.
