@@ -1,60 +1,66 @@
 <xproperties>
-	<xproperties>
-		<entry>
-			<key>DOMSUserName</key>
-			<value class="string">fedoraAdmin</value>
-		</entry>
-		<entry>
-			<key>DOMSPassword</key>
-			<value class="string">fedoraAdminPass</value>
-		</entry>
-		<entry>
-			<key>DOMSWebserviceURL</key>
-			<value class="string">http://alhena:7880/centralDomsWebservice/central/?wsdl
-			</value>
-		</entry>
+    <xproperties>
+        <entry>
+            <key>DOMSUserName</key>
+            <value class="string">fedoraAdmin</value>
+        </entry>
+        <entry>
+            <key>DOMSPassword</key>
+            <value class="string">fedoraAdminPass</value>
+        </entry>
+        <entry>
+            <key>DOMSWebserviceURL</key>
+            <value class="string">http://alhena:7880/centralDomsWebservice/central/?wsdl
+            </value>
+        </entry>
 
-		<entry>
-			<key>accessibleCollectionBases</key>
-			<value class="list">
-				<xproperties>
-					<entry>
-						<key>collectionBaseID</key>
-						<value class="string">radioTVCollection</value>
-					</entry>
-					<entry>
-						<key>collectionPID</key>
-						<value class="string">doms:RadioTV_Collection</value>
-					</entry>
-					<entry>
-						<key>collectionEntryContentModelPID</key>
-						<value class="string">doms:ContentModel_Program</value>
-					</entry>
-					<entry>
-						<key>viewID</key>
-						<value class="string">SummaVisible</value>
-					</entry>
-				</xproperties>
+        <!-- Currently working example entry. -->
+        <entry>
+            <key>accessibleCollectionBases</key>
+            <value class="list">
+                <xproperties>
+                    <entry>
+                        <key>collectionBaseID</key>
+                        <value class="string">radioTVCollection</value>
+                    </entry>
+                    <entry>
+                        <key>collectionPID</key>
+                        <value class="string">doms:RadioTV_Collection
+                        </value>
+                    </entry>
+                    <entry>
+                        <key>collectionEntryContentModelPID</key>
+                        <value class="string">doms:ContentModel_Program
+                        </value>
+                    </entry>
+                    <entry>
+                        <key>viewID</key>
+                        <value class="string">SummaVisible</value>
+                    </entry>
+                </xproperties>
 
-				<xproperties>
-					<entry>
-						<key>collectionBaseID</key>
-						<value class="string">sbTorrent</value>
-					</entry>
-					<entry>
-						<key>collectionPID</key>
-						<value class="string">doms:PiratedMovies</value>
-					</entry>
-					<entry>
-						<key>collectionEntryContentModelPID</key>
-						<value class="string">doms:ContentModelMovie</value>
-					</entry>
-					<entry>
-						<key>viewID</key>
-						<value class="string">BogusView</value>
-					</entry>
-				</xproperties>
-			</value>
-		</entry>
-	</xproperties>
+                <!-- Example entry:
+                <xproperties>
+                    <entry>
+                        <key>collectionBaseID</key>
+                        <value class="string">sbTorrent</value>
+                    </entry>
+                    <entry>
+                        <key>collectionPID</key>
+                        <value class="string">doms:PiratedMovies</value>
+                    </entry>
+                    <entry>
+                        <key>collectionEntryContentModelPID</key>
+                        <value class="string">doms:ContentModelMovie
+                        </value>
+                    </entry>
+                    <entry>
+                        <key>viewID</key>
+                        <value class="string">BogusView</value>
+                    </entry>
+                </xproperties>
+                 -->
+            </value>
+        </entry>
+    </xproperties>
 </xproperties>

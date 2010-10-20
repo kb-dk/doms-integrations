@@ -6,8 +6,10 @@ package dk.statsbiblioteket.doms.integration.summa;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,13 +19,8 @@ import dk.statsbiblioteket.doms.client.DOMSWSClient;
 import dk.statsbiblioteket.doms.client.ServerOperationFailed;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
-import dk.statsbiblioteket.util.Logs;
 
 /**
- * FIXME! It is probably better to have a RecordDescription iterator and let the
- * DOMSReadableStorage build the Summa records. Thus, keeping all Summa-stuff in
- * the interface class.
- * 
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 class SummaRecordIterator implements Iterator<Record> {
@@ -35,21 +32,28 @@ class SummaRecordIterator implements Iterator<Record> {
      */
     private final DOMSWSClient domsClient;
 
-    private final List<BaseDOMSConfiguration> baseConfigurations;
-
+    private final Map<String, BaseDOMSConfiguration> baseConfigurations;
+    private final Iterator<String> summaBaseIDIterator;
     private final long startTimeStamp;
-    private long previousModificationTimeStamp;
-
     private final QueryOptions queryOptions;
 
-    SummaRecordIterator(DOMSWSClient domsClient,
-	    List<BaseDOMSConfiguration> baseConfigurations, long timeStamp,
-	    QueryOptions options) {
+    private String currentSummaBaseID;
+    private long currentRecordIndex;
 
-	this.domsClient = domsClient;
-	this.baseConfigurations = baseConfigurations;
-	startTimeStamp = timeStamp;
-	queryOptions = options;
+    private Record cachedRecord;
+
+    SummaRecordIterator(DOMSWSClient domsClient,
+            Map<String, BaseDOMSConfiguration> baseConfigurations,
+            Set<String> summaBaseIDs, long timeStamp, QueryOptions options) {
+
+        this.domsClient = domsClient;
+        this.baseConfigurations = baseConfigurations;
+        summaBaseIDIterator = summaBaseIDs.iterator();
+        startTimeStamp = timeStamp;
+        queryOptions = options;
+        cachedRecord = null;
+        currentSummaBaseID = summaBaseIDIterator.next();
+        currentRecordIndex = 0;
     }
 
     /*
@@ -57,12 +61,20 @@ class SummaRecordIterator implements Iterator<Record> {
      * 
      * @see java.util.Iterator#hasNext()
      */
-    @Override
     public boolean hasNext() {
-	// Do a "next" without throwing exceptions and cache the result.
-
-	// TODO Auto-generated method stub
-	return false;
+        if (cachedRecord != null) {
+            return true;
+        } else {
+            // Do a "next" without throwing exceptions and cache the result.
+            try {
+                cachedRecord = next();
+                return true;
+            } catch (NoSuchElementException noSuchElementException) {
+                // Ditch the exception.
+                cachedRecord = null;
+                return false;
+            }
+        }
     }
 
     /*
@@ -70,24 +82,138 @@ class SummaRecordIterator implements Iterator<Record> {
      * 
      * @see java.util.Iterator#next()
      */
-    @Override
     public Record next() {
-	// Return the cached result from hasNext, if available. Remember
-	// clearing the cache before returning.
 
-	// TODO Auto-generated method stub
-	return null;
+        // TODO: It may be better fetching a small chunk of records, rather than
+        // making a web service call per record!
+        if (cachedRecord != null) {
+            final Record resultRecord = cachedRecord;
+            cachedRecord = null;
+            return resultRecord;
+        } else {
+
+            try {
+                // Note! getNextRecordDescription() may modify attributes such
+                // as currentSummaBaseID!
+                final RecordDescription recordDescription = getNextRecordDescription();
+
+                final URI modifiedEntryObjectPID = new URI(recordDescription
+                        .getPid());
+
+                final BaseDOMSConfiguration baseConfiguration = baseConfigurations
+                        .get(currentSummaBaseID);
+
+                final String viewID = baseConfiguration.getViewID();
+
+                final byte data[] = domsClient.getViewBundle(
+                        modifiedEntryObjectPID, viewID).getBytes();
+
+                // Prepend the base name to the PID in order to make it possible
+                // for the DOMSReadableStorage.getRecord() methods to figure out
+                // what view to use when they are invoked. It's ugly, but hey!
+                // That's life....
+                final String summaRecordID = currentSummaBaseID
+                        + DOMSReadableStorage.RECORD_ID_DELIMITER
+                        + modifiedEntryObjectPID.toString();
+                final Record newRecord = new Record(summaRecordID,
+                        currentSummaBaseID, data);
+
+                return newRecord;
+            } catch (URISyntaxException uriSyntaxException) {
+                final BaseDOMSConfiguration baseConfiguration = baseConfigurations
+                        .get(currentSummaBaseID);
+
+                final String errorMessage = "Failed retrieving record "
+                        + "(startTime = " + startTimeStamp + " index = "
+                        + (currentRecordIndex - 1) + " viewID = "
+                        + baseConfiguration.getViewID()
+                        + ") from collection (PID = "
+                        + baseConfiguration.getCollectionPID() + ").";
+                log.warn("next(): " + errorMessage, uriSyntaxException);
+                throw new NoSuchElementException(errorMessage);
+            } catch (ServerOperationFailed serverOperationFailed) {
+                final BaseDOMSConfiguration baseConfiguration = baseConfigurations
+                        .get(currentSummaBaseID);
+
+                final String errorMessage = "Failed retrieving record "
+                        + "(startTime = " + startTimeStamp + " index = "
+                        + (currentRecordIndex - 1) + " viewID = "
+                        + baseConfiguration.getViewID()
+                        + ") from collection (PID = "
+                        + baseConfiguration.getCollectionPID() + ").";
+                log.warn("next(): " + errorMessage, serverOperationFailed);
+                throw new NoSuchElementException(errorMessage);
+            }
+        }
     }
 
-    /*
-     * (non-Javadoc)
+    /**
+     * Unsupported operation.
      * 
      * @see java.util.Iterator#remove()
      */
-    @Override
     public void remove() {
-	// TODO Auto-generated method stub
+        throw new UnsupportedOperationException();
+    }
 
+    /**
+     * @return
+     * @throws ServerOperationFailed
+     */
+    private RecordDescription getNextRecordDescription()
+            throws ServerOperationFailed {
+
+        BaseDOMSConfiguration baseConfiguration = baseConfigurations
+                .get(currentSummaBaseID);
+
+        URI collectionPID = baseConfiguration.getCollectionPID();
+        String viewID = baseConfiguration.getViewID();
+        final String objectState = "Published";// FIXME! Hard-coded object
+        // state!
+
+        try {
+            List<RecordDescription> recordDescriptions = domsClient
+                    .getModifiedEntryObjects(collectionPID, viewID,
+                            startTimeStamp, objectState, currentRecordIndex++,
+                            1);
+
+            // If there are no more record descriptions available, the iterate
+            // through the remaining bases/collections before throwing in the
+            // towel.
+            while (recordDescriptions.size() == 0
+                    && summaBaseIDIterator.hasNext()) {
+
+                // Attempt to get a record description, using the next Summa
+                // base ID.
+                currentSummaBaseID = summaBaseIDIterator.next();
+
+                baseConfiguration = baseConfigurations.get(currentSummaBaseID);
+                collectionPID = baseConfiguration.getCollectionPID();
+                viewID = baseConfiguration.getViewID();
+
+                recordDescriptions = domsClient.getModifiedEntryObjects(
+                        collectionPID, viewID, startTimeStamp, objectState,
+                        currentRecordIndex++, 1);
+            }
+
+            if (recordDescriptions.isEmpty()) {
+                // We\re out of Summa base IDs and record descriptions...
+                throw new NoSuchElementException(
+                        "This iterator is out of records.");
+            }
+
+            return recordDescriptions.get(0);
+
+        } catch (ServerOperationFailed serverOperationFailed) {
+            final String errorMessage = "Failed retrieving record "
+                    + "(startTime = " + startTimeStamp + " index = "
+                    + (currentRecordIndex - 1) + " viewID = " + viewID
+                    + " objectState = " + objectState
+                    + ") from collection (PID = " + collectionPID + ").";
+            log.warn("getNextRecordDescription(): " + errorMessage,
+                    serverOperationFailed);
+            throw serverOperationFailed;
+        }
     }
 
     // TODO: Scissored code from DOMSReadableStorage....
@@ -114,47 +240,59 @@ class SummaRecordIterator implements Iterator<Record> {
      *             <code>URI</code>. This is quite unlikely to happen.
      */
     /*
-     * private List<Record> getSingleBaseRecordsModifiedAfter(long timeStamp,
-     * BaseDOMSConfiguration baseConfiguration, QueryOptions options) throws
-     * ServerOperationFailed, URISyntaxException {
-     * 
-     * if (log.isTraceEnabled()) {
-     * log.trace("getSingleBaseRecordsModifiedAfter(long, String, " +
-     * "QueryOptions): " + "called with timestamp: " + timeStamp +
-     * " baseConfiguration: " + baseConfiguration + " QueryOptions: " +
-     * options); }
-     * 
-     * final URI collectionPID = baseConfiguration.getCollectionPID(); final
-     * String viewID = baseConfiguration.getViewID(); final URI
-     * contentModelEntryObjectPID = baseConfiguration
-     * .getContentModelEntryObjectPID();
-     * 
-     * final List<RecordDescription> recordDescriptions = domsClient
-     * .getModifiedEntryObjects(collectionPID, viewID,
-     * contentModelEntryObjectPID, timeStamp, "Published"); // FIXME! Hard-coded
-     * "Published" state. What about an enum?
-     * 
-     * // FIXME! Clarify how QueryOptions should be handled and // implement
-     * filter-magic here...
-     * 
-     * // Trivial first-shot record and iterator construction. final
-     * List<Record> modifiedRecords = new LinkedList<Record>(); for
-     * (RecordDescription recordDescription : recordDescriptions) {
-     * 
-     * // Get the PID of the modified content model entry object. final URI
-     * modifiedEntryCMObjectPID = new URI(recordDescription .getPid()); final
-     * byte data[] = domsClient.getViewBundle( modifiedEntryCMObjectPID,
-     * viewID).getBytes();
-     * 
-     * // Prepend the base name to the PID in order to make it possible // for
-     * the getRecord() methods to figure out what view to use // when they are
-     * invoked. It's ugly, but hey! That's life.... final String summaRecordID =
-     * summaBaseID + RECORD_ID_DELIMITER + modifiedEntryCMObjectPID.toString();
-     * final Record newRecord = new Record(summaRecordID, summaBaseID, data);
-     * modifiedRecords.add(newRecord); } if (log.isTraceEnabled()) {
-     * Logs.log(log, Logs.Level.TRACE,
-     * "getSingleBaseRecordsModifiedAfter(long, String, " +
-     * "QueryOptions): returning with modifiedRecords: " + modifiedRecords); }
-     * return modifiedRecords; }
-     */
+        private List<Record> getSingleBaseRecordsModifiedAfter(long timeStamp,
+                String summaBaseID, QueryOptions options)
+                throws ServerOperationFailed, URISyntaxException {
+
+            if (log.isTraceEnabled()) {
+                log.trace("getSingleBaseRecordsModifiedAfter(long, String, "
+                        + "QueryOptions): " + "called with timestamp: " + timeStamp
+                        + " summaBaseID: " + summaBaseID + " QueryOptions: "
+                        + options);
+            }
+
+            final BaseDOMSConfiguration baseConfiguration = baseConfigurations
+                    .get(summaBaseID);
+
+            final URI collectionPID = baseConfiguration.getCollectionPID();
+            final String viewID = baseConfiguration.getViewID();
+            final URI contentModelEntryObjectPID = baseConfiguration
+                    .getContentModelEntryObjectPID();
+
+            final List<RecordDescription> recordDescriptions = domsClient
+                    .getModifiedEntryObjects(collectionPID, viewID,
+                            contentModelEntryObjectPID, timeStamp, "Published");
+            // FIXME! Hard-coded "Published" state. What about an enum?
+
+            // FIXME! Clarify how QueryOptions should be handled and
+            // implement filter-magic here...
+
+            // Trivial first-shot record and iterator construction.
+            final List<Record> modifiedRecords = new LinkedList<Record>();
+            for (RecordDescription recordDescription : recordDescriptions) {
+
+                // Get the PID of the modified content model entry object.
+                final URI modifiedEntryCMObjectPID = new URI(recordDescription
+                        .getPid());
+                final byte data[] = domsClient.getViewBundle(
+                        modifiedEntryCMObjectPID, viewID).getBytes();
+
+                // Prepend the base name to the PID in order to make it possible
+                // for the getRecord() methods to figure out what view to use
+                // when they are invoked. It's ugly, but hey! That's life....
+                final String summaRecordID = summaBaseID + RECORD_ID_DELIMITER
+                        + modifiedEntryCMObjectPID.toString();
+                final Record newRecord = new Record(summaRecordID, summaBaseID,
+                        data);
+                modifiedRecords.add(newRecord);
+            }
+            if (log.isTraceEnabled()) {
+                Logs.log(log, Logs.Level.TRACE,
+                        "getSingleBaseRecordsModifiedAfter(long, String, "
+                                + "QueryOptions): returning with modifiedRecords: "
+                                + modifiedRecords);
+            }
+            return modifiedRecords;
+        }
+    */
 }

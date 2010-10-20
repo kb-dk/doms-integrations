@@ -45,6 +45,9 @@ public class BaseDOMSConfiguration {
     /**
      * PID (UUID) of the DOMS content model entry object which identifies the
      * anchor/root objects which the Summa base is associated with.
+     * 
+     * TODO: Check whether this information should still be here. It is probably
+     * obsolete.
      */
     private final URI contentModelEntryObjectPID;
 
