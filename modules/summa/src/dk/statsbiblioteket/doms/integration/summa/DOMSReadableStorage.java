@@ -191,29 +191,12 @@ public class DOMSReadableStorage implements Storage {
         // FIXME! Add proper query options handling.
 
         try {
-            List<Record> resultRecords = null;
-
             Set<String> iteratorBaseIDs = null;
             if (summaBaseID != null) {
                 iteratorBaseIDs = new LinkedHashSet<String>();
                 iteratorBaseIDs.add(summaBaseID);
-
-                // TODO: The line below will die....
-                resultRecords = getSingleBaseRecordsModifiedAfter(timeStamp,
-                        summaBaseID, options);
-
             } else {
                 iteratorBaseIDs = baseConfigurations.keySet();
-
-                // TODO: The rest of this statement will die....
-
-                // Get records from all bases defined in the configuration.
-                resultRecords = new LinkedList<Record>();
-                for (String currentBaseID : baseConfigurations.keySet()) {
-
-                    resultRecords.addAll(getSingleBaseRecordsModifiedAfter(
-                            timeStamp, currentBaseID, options));
-                }
             }
 
             // TODO: This iterator should be registered and returned when it has
@@ -222,8 +205,7 @@ public class DOMSReadableStorage implements Storage {
                     domsClient, baseConfigurations, iteratorBaseIDs, timeStamp,
                     options);
 
-            final long iteratorKey = registerIterator(resultRecords.iterator());
-            // final long iteratorKey = registerIterator(recordIterator);
+             final long iteratorKey = registerIterator(recordIterator);
 
             log.trace("getRecordsModifedAfter(): returning iteratorKey = "
                     + iteratorKey);
@@ -440,80 +422,6 @@ public class DOMSReadableStorage implements Storage {
                 jobName, " base: ", base, " minMtime: ", minMtime,
                 " maxMtime:", maxMtime, " options: ", options);
         throw new NotImplementedException();
-    }
-
-    /**
-     * Get all the records modified later than the given time-stamp, for a given
-     * Summa base.
-     * 
-     * @param timeStamp
-     *            the time-stamp after which the modified records must be
-     *            selected.
-     * @param summaBaseID
-     *            the base to look for modifications in.
-     * @param options
-     *            <code>QueryOptions</code> containing further selection
-     *            criteria specified by the caller.
-     * @return a list of records modified after <code>timeStamp</code> and
-     *         matching the specified <code>options</code>.
-     * @throws ServerOperationFailed
-     *             if any errors are encountered when communicating with the
-     *             DOMS.
-     * @throws URISyntaxException
-     *             if a PID, returned by the DOMS, is an invalid
-     *             <code>URI</code>. This is quite unlikely to happen.
-     */
-    private List<Record> getSingleBaseRecordsModifiedAfter(long timeStamp,
-            String summaBaseID, QueryOptions options)
-            throws ServerOperationFailed, URISyntaxException {
-
-        if (log.isTraceEnabled()) {
-            log.trace("getSingleBaseRecordsModifiedAfter(long, String, "
-                    + "QueryOptions): " + "called with timestamp: " + timeStamp
-                    + " summaBaseID: " + summaBaseID + " QueryOptions: "
-                    + options);
-        }
-
-        final BaseDOMSConfiguration baseConfiguration = baseConfigurations
-                .get(summaBaseID);
-
-        final URI collectionPID = baseConfiguration.getCollectionPID();
-        final String viewID = baseConfiguration.getViewID();
-
-        final List<RecordDescription> recordDescriptions = domsClient
-                .getModifiedEntryObjects(collectionPID, viewID, timeStamp,
-                        "Published", 0, Long.MAX_VALUE);
-        // FIXME! Hard-coded "Published" state. What about an enum?
-
-        // FIXME! Clarify how QueryOptions should be handled and
-        // implement filter-magic here...
-
-        // Trivial first-shot record and iterator construction.
-        final List<Record> modifiedRecords = new LinkedList<Record>();
-        for (RecordDescription recordDescription : recordDescriptions) {
-
-            // Get the PID of the modified content model entry object.
-            final URI modifiedEntryCMObjectPID = new URI(recordDescription
-                    .getPid());
-            final byte data[] = domsClient.getViewBundle(
-                    modifiedEntryCMObjectPID, viewID).getBytes();
-
-            // Prepend the base name to the PID in order to make it possible
-            // for the getRecord() methods to figure out what view to use
-            // when they are invoked. It's ugly, but hey! That's life....
-            final String summaRecordID = summaBaseID + RECORD_ID_DELIMITER
-                    + modifiedEntryCMObjectPID.toString();
-            final Record newRecord = new Record(summaRecordID, summaBaseID,
-                    data);
-            modifiedRecords.add(newRecord);
-        }
-        if (log.isTraceEnabled()) {
-            Logs.log(log, Logs.Level.TRACE,
-                    "getSingleBaseRecordsModifiedAfter(long, String, "
-                            + "QueryOptions): returning with modifiedRecords: "
-                            + modifiedRecords);
-        }
-        return modifiedRecords;
     }
 
     /**
