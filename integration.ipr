@@ -244,7 +244,7 @@
       <module fileurl="file://$PROJECT_DIR$/integration.iml" filepath="$PROJECT_DIR$/integration.iml" />
     </modules>
   </component>
-  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_6" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
+  <component name="ProjectRootManager" version="2" languageLevel="JDK_1_5" assert-keyword="true" jdk-15="true" project-jdk-name="1.6" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/out" />
   </component>
   <component name="ResourceManagerContainer">
@@ -304,11 +304,11 @@
     </library>
     <library name="centralWebserviceInterface">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/centralWebserviceInterface/jars/centralWebserviceInterface.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsserver-0.0.8/jars/centralWebserviceInterface.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/lib/centralWebserviceInterface/src/centralWebserviceInterface-src.zip!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsserver-0.0.8/src/centralWebserviceInterface-src.zip!/" />
       </SOURCES>
     </library>
     <library name="commons-logging">
@@ -327,6 +327,15 @@
       <JAVADOC />
       <SOURCES>
         <root url="jar://$PROJECT_DIR$/lib/sbutils-0.4.8/src/sbutil-0.4.8-src.zip!/sbutil-0.4.8/src" />
+      </SOURCES>
+    </library>
+    <library name="domsclient">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.1#SNAPSHOT/jars/domsclient.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.1#SNAPSHOT/src/domsclient-src.zip!/" />
       </SOURCES>
     </library>
   </component>
