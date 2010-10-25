@@ -1,5 +1,28 @@
-/**
- * 
+/*
+ * $Id: BaseRecordDescription.java 1069 2010-10-22 13:22:00Z thomassh $
+ * $Revision: 1069 $
+ * $Date: 2010-10-22 15:22:00 +0200 (Fri, 22 Oct 2010) $
+ * $Author: thomassh $
+ *
+ * The DOMS project.
+ * Copyright (C) 2007-2010  The State and University Library
+ *
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing,
+ * software distributed under the License is distributed on an
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+ * KIND, either express or implied.  See the License for the
+ * specific language governing permissions and limitations
+ * under the License.
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
@@ -119,9 +142,17 @@ class SummaRecordIterator implements Iterator<Record> {
     }
 
     /**
+     * Get the next BaseRecordDescription from the sorted tree
+     * <code>baseRecordDescriptions</code> and update the instance counter for
+     * the Summa base which its <code>RecordDescription</code> was retrieved
+     * from.
      * 
-     * @return
+     * @return the <code>BaseRecordDescription</code> in
+     *         <code>baseRecordDescriptions</code> containing the
+     *         <code>RecordDescription</code> with the lowest time-stamp.
      * @throws ServerOperationFailed
+     *             if the retrieval of <code>RecordDescription</code> instances
+     *             from the DOMS fails.
      */
     private BaseRecordDescription getNextBaseRecordDescription()
             throws ServerOperationFailed {
@@ -139,7 +170,7 @@ class SummaRecordIterator implements Iterator<Record> {
                 .setCurrentRecordDescriptionCount(currentRecordDescriptionCount);
 
         if (currentRecordDescriptionCount == 0) {
-            // Just fetched the last element. Refill...
+            // Just fetched the last element from this Summa base. Refill...
             fetchBaseRecordDescriptions(summaBaseID);
         }
 
@@ -163,23 +194,26 @@ class SummaRecordIterator implements Iterator<Record> {
     }
 
     /**
-     * TODO: Update javadoc!
-     * 
      * This method fetches a new chunk of <code>RecordDescription</code>
-     * instances from the DOMS and replaces the container currently held by
-     * <code>cachedRecordDescriptions</code> with a new one, containing the
-     * <code>RecordDescription</code> instances.
+     * instances from the DOMS for each summa base ID present in the
+     * <code>baseStates Map</code> having a
+     * <code>currentRecordDescriptionCount</code> of zero in its associated
+     * <code>BaseState</code>. The size of the chunk of
+     * <code>RecordDescription</code> instances is determined by the
+     * <code>RECORD_COUNT_PER_RETRIEVAL</code> constant and will be added to the
+     * <code>baseRecordDescriptions</code> attribute.
      * 
-     * @return <code>true</code> if the <code>cachedRecordDescriptions</code>
-     *         attribute was updated with new <code>RecordDescription</code>
-     *         instances and otherwise <code>false</code>
      * @throws ServerOperationFailed
+     *             if any problems are encountered while retriving
+     *             <code>RecordDescription</code> instances from the DOMS.
      */
     private void fillCache() throws ServerOperationFailed {
 
         for (String summaBaseID : baseStates.keySet()) {
-
-            fetchBaseRecordDescriptions(summaBaseID);
+            final BaseState summaBaseState = baseStates.get(summaBaseID);
+            if (summaBaseState.getCurrentRecordDescriptionCount() == 0) {
+                fetchBaseRecordDescriptions(summaBaseID);
+            }
         }
     }
 
