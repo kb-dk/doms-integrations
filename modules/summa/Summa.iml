@@ -34,6 +34,7 @@
     <orderEntry type="library" name="sbutils" level="project" />
     <orderEntry type="library" name="centralWebserviceInterface" level="project" />
     <orderEntry type="library" name="commons-logging" level="project" />
+    <orderEntry type="library" name="domsclient" level="project" />
   </component>
 </module>
 
