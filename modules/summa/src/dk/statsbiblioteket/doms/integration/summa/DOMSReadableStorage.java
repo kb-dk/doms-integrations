@@ -29,7 +29,6 @@ package dk.statsbiblioteket.doms.integration.summa;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -45,9 +44,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
 import dk.statsbiblioteket.doms.client.DOMSWSClient;
-import dk.statsbiblioteket.doms.client.ServerOperationFailed;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
@@ -205,7 +202,7 @@ public class DOMSReadableStorage implements Storage {
                     domsClient, baseConfigurations, iteratorBaseIDs, timeStamp,
                     options);
 
-             final long iteratorKey = registerIterator(recordIterator);
+            final long iteratorKey = registerIterator(recordIterator);
 
             log.trace("getRecordsModifedAfter(): returning iteratorKey = "
                     + iteratorKey);
