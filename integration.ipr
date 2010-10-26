@@ -331,11 +331,11 @@
     </library>
     <library name="domsclient">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.1#SNAPSHOT/jars/domsclient.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.1/jars/domsclient.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.1#SNAPSHOT/src/domsclient-src.zip!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.1/src/domsclient-src.zip!/" />
       </SOURCES>
     </library>
   </component>
