@@ -26,8 +26,6 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -95,6 +93,10 @@ class SummaRecordIterator implements Iterator<Record> {
      * @see java.util.Iterator#hasNext()
      */
     public boolean hasNext() {
+        if (log.isTraceEnabled()) {
+            log.trace("hasNext(): Entering.");
+        }
+
         if (!baseRecordDescriptions.isEmpty()) {
             return true;
         } else {
@@ -109,7 +111,12 @@ class SummaRecordIterator implements Iterator<Record> {
                         + " cache.", serverOperationFailed);
             }
 
-            return !baseRecordDescriptions.isEmpty();
+            final boolean hasNextElement = !baseRecordDescriptions.isEmpty();
+            if (log.isTraceEnabled()) {
+                log.trace("hasNext(): Returning '" + hasNextElement + "'");
+            }
+
+            return hasNextElement;
         }
     }
 
@@ -119,6 +126,10 @@ class SummaRecordIterator implements Iterator<Record> {
      * @see java.util.Iterator#next()
      */
     public Record next() {
+        if (log.isTraceEnabled()) {
+            log.trace("next(): Entering.");
+        }
+
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
@@ -126,7 +137,12 @@ class SummaRecordIterator implements Iterator<Record> {
         try {
             // Get the next RecordDescription from the cache, build a Record and
             // return it.
-            return buildRecord(getNextBaseRecordDescription());
+            final Record nextRecord = buildRecord(getNextBaseRecordDescription());
+
+            if (log.isTraceEnabled()) {
+                log.trace("next(): Returning record: " + nextRecord);
+            }
+            return nextRecord;
         } catch (ServerOperationFailed serverOperationFailed) {
             throw new NoSuchElementException();
         }
@@ -157,6 +173,10 @@ class SummaRecordIterator implements Iterator<Record> {
     private BaseRecordDescription getNextBaseRecordDescription()
             throws ServerOperationFailed {
 
+        if (log.isTraceEnabled()) {
+            log.trace("getNextBaseRecordDescription(): Entering.");
+        }
+
         final BaseRecordDescription baseRecordDescription = baseRecordDescriptions
                 .pollFirst();
 
@@ -174,6 +194,10 @@ class SummaRecordIterator implements Iterator<Record> {
             fetchBaseRecordDescriptions(summaBaseID);
         }
 
+        if (log.isTraceEnabled()) {
+            log.trace("getNextBaseRecordDescription(): Returning "
+                    + "BaseRecordDescription: " + baseRecordDescription);
+        }
         return baseRecordDescription;
     }
 
@@ -183,12 +207,22 @@ class SummaRecordIterator implements Iterator<Record> {
      * <code>Map</code>.
      * 
      * @param baseIDs
-     * @return
+     *            a <code>Set</code> of base IDs to create base state map from.
+     * @return a <code>Map</code> which associates each of the base IDs from
+     *         <code>baseIDs</code> with a <code>BaseState</code> instance.
      */
     private Map<String, BaseState> createBaseStatesMap(Set<String> baseIDs) {
+        if (log.isTraceEnabled()) {
+            log.trace("createBaseStatesMap(Set<String>): Entering.");
+        }
         Map<String, BaseState> baseStates = new HashMap<String, BaseState>();
         for (String baseID : baseIDs) {
             baseStates.put(baseID, new BaseState());
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace("createBaseStatesMap(Set<String>): Returning a map with "
+                    + baseStates.size() + " base state associations.");
         }
         return baseStates;
     }
@@ -209,11 +243,18 @@ class SummaRecordIterator implements Iterator<Record> {
      */
     private void fillCache() throws ServerOperationFailed {
 
+        if (log.isTraceEnabled()) {
+            log.trace("fillCache(): Entering.");
+        }
         for (String summaBaseID : baseStates.keySet()) {
             final BaseState summaBaseState = baseStates.get(summaBaseID);
             if (summaBaseState.getCurrentRecordDescriptionCount() == 0) {
                 fetchBaseRecordDescriptions(summaBaseID);
             }
+        }
+        if (log.isTraceEnabled()) {
+            log.trace("fillCache(): Successfully updated the cache for "
+                    + baseStates.keySet().size() + " base IDs.");
         }
     }
 
@@ -228,11 +269,16 @@ class SummaRecordIterator implements Iterator<Record> {
     private void fetchBaseRecordDescriptions(String summaBaseID)
             throws ServerOperationFailed {
 
+        if (log.isTraceEnabled()) {
+            log.trace("fetchBaseRecordDescriptions(String): Entering. "
+                    + "summaBaseID = " + summaBaseID);
+        }
         // Get the configuration for the Summa base ID.
         final BaseDOMSConfiguration baseConfiguration = baseConfigurations
                 .get(summaBaseID);
 
-        URI collectionPID = baseConfiguration.getCollectionPID();
+        final String collectionPIDString = baseConfiguration.getCollectionPID()
+                .toString();
         String viewID = baseConfiguration.getViewID();
         final String objectState = "Published";// FIXME! Hard-coded object
         // state!
@@ -244,7 +290,7 @@ class SummaRecordIterator implements Iterator<Record> {
                 .getNextRecordDescriptionIndex();
         try {
             retrievedRecordDescriptions = domsClient.getModifiedEntryObjects(
-                    collectionPID, viewID, startTimeStamp, objectState,
+                    collectionPIDString, viewID, startTimeStamp, objectState,
                     currentRecordIndex, RECORD_COUNT_PER_RETRIEVAL);
 
             // Remove the base information from the base state map if there are
@@ -252,12 +298,25 @@ class SummaRecordIterator implements Iterator<Record> {
             if (retrievedRecordDescriptions.isEmpty()) {
                 baseStates.remove(summaBaseID);
                 retrievedRecordDescriptions = new LinkedList<RecordDescription>();
+                if (log.isTraceEnabled()) {
+                    log.trace("fetchBaseRecordDescriptions(String): The DOMS "
+                            + "has no more records for this base (base ID = '"
+                            + summaBaseID + "'. Removing it from the map of "
+                            + "active base IDs.");
+                }
             } else {
 
+                final long currentCount = summaBaseState
+                        .getCurrentRecordDescriptionCount();
+                if (currentCount != 0) {
+                    log.warn("fetchBaseRecordDescriptions(String): The cache"
+                            + " size for this base ID (" + summaBaseID
+                            + ") was non-zero (actual size = " + currentCount
+                            + ") when this re-fill was requested.");
+                }
                 // The current count is supposed to be zero, however, use
                 // addition to avoid any errors.
-                summaBaseState.setCurrentRecordDescriptionCount(summaBaseState
-                        .getCurrentRecordDescriptionCount()
+                summaBaseState.setCurrentRecordDescriptionCount(currentCount
                         + retrievedRecordDescriptions.size());
 
                 // Move the index forward with the amount of records just
@@ -275,12 +334,19 @@ class SummaRecordIterator implements Iterator<Record> {
                 baseRecordDescriptions.add(baseRecordDescription);
             }
 
+            if (log.isTraceEnabled()) {
+                log.trace("fetchBaseRecordDescriptions(String): Returning "
+                        + "after adding " + retrievedRecordDescriptions.size()
+                        + " record decscriptions to the cache for the Summa"
+                        + " base ID: " + summaBaseID);
+            }
+
         } catch (ServerOperationFailed serverOperationFailed) {
             final String errorMessage = "Failed retrieving up to "
                     + RECORD_COUNT_PER_RETRIEVAL + "records " + "(startTime = "
                     + startTimeStamp + " start index = " + currentRecordIndex
                     + " viewID = " + viewID + " objectState = " + objectState
-                    + ") from collection (PID = " + collectionPID + ").";
+                    + ") from collection (PID = " + collectionPIDString + ").";
 
             log.warn("fetchBaseRecordDescriptions(String): " + errorMessage,
                     serverOperationFailed);
@@ -299,6 +365,11 @@ class SummaRecordIterator implements Iterator<Record> {
      */
     private Record buildRecord(BaseRecordDescription baseRecordDescription) {
 
+        if (log.isTraceEnabled()) {
+            log.trace("buildRecord(BaseRecordDescription): Entering. "
+                    + "baseRecordDescription = " + baseRecordDescription);
+        }
+
         final String summaBaseID = baseRecordDescription.getSummaBaseID();
 
         final BaseDOMSConfiguration baseConfiguration = baseConfigurations
@@ -310,11 +381,11 @@ class SummaRecordIterator implements Iterator<Record> {
             final RecordDescription recordDescription = baseRecordDescription
                     .getRecordDescription();
 
-            final URI modifiedEntryObjectPID = new URI(recordDescription
-                    .getPid());
+            final String modifiedEntryObjectPIDString = recordDescription
+                    .getPid();
 
             final byte recordData[] = domsClient.getViewBundle(
-                    modifiedEntryObjectPID, viewID).getBytes();
+                    modifiedEntryObjectPIDString, viewID).getBytes();
 
             // Prepend the base name to the PID in order to make it possible
             // for the DOMSReadableStorage.getRecord() methods to figure out
@@ -322,22 +393,17 @@ class SummaRecordIterator implements Iterator<Record> {
             // That's life....
             final String recordID = summaBaseID
                     + DOMSReadableStorage.RECORD_ID_DELIMITER
-                    + modifiedEntryObjectPID.toString();
+                    + modifiedEntryObjectPIDString.toString();
 
             final Record newRecord = new Record(recordID, summaBaseID,
                     recordData);
 
+            if (log.isTraceEnabled()) {
+                log.trace("buildRecord(BaseRecordDescription): Returning a "
+                        + "record (recordID = '" + recordID
+                        + "' summaBaseID = '" + summaBaseID + "')");
+            }
             return newRecord;
-        } catch (URISyntaxException uriSyntaxException) {
-
-            final String errorMessage = "Failed retrieving record "
-                    + "(startTime = " + startTimeStamp + " viewID = "
-                    + baseConfiguration.getViewID()
-                    + ") from collection (PID = "
-                    + baseConfiguration.getCollectionPID() + ").";
-            log.warn("buildRecord(): " + errorMessage, uriSyntaxException);
-
-            throw new NoSuchElementException(errorMessage);
         } catch (ServerOperationFailed serverOperationFailed) {
 
             final String errorMessage = "Failed retrieving record "
