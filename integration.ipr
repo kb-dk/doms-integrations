@@ -326,13 +326,24 @@
         <root url="jar://$PROJECT_DIR$/lib/sbutil-0.5.2/src/sbutil-0.5.2-src.zip!/sbutil-0.5.2/src" />
       </SOURCES>
     </library>
-    <library name="domsclient">
+    <library name="summa">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.1/jars/domsclient.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/summa-common-1.6.2/jars/summa-common-1.6.2.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/summa-storage-1.6.2/jars/summa-storage-api-1.6.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.1/src/domsclient-src.zip!/" />
+        <root url="jar://$PROJECT_DIR$/lib/summa-storage-1.6.2/src/summa-storage-1.6.2.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/summa-common-1.6.2/src/summa-common-1.6.2.jar!/" />
+      </SOURCES>
+    </library>
+    <library name="domsclient">
+      <CLASSES>
+        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.2/jars/domsclient.jar!/" />
+      </CLASSES>
+      <JAVADOC />
+      <SOURCES>
+        <root url="jar://$PROJECT_DIR$/lib/domsclient-0.0.2/src/domsclient-src.zip!/" />
       </SOURCES>
     </library>
   </component>

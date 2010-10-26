@@ -8,32 +8,11 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="module-library">
-      <library name="summa-common">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/summa-common-1.6.2/jars/summa-common-1.6.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/lib/summa-common-1.6.2/src/summa-common-1.6.2.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library name="summa-storage">
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/summa-storage-1.6.2/jars/summa-storage-api-1.6.2.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES>
-          <root url="jar://$MODULE_DIR$/lib/summa-storage-1.6.2/src/summa-storage-1.6.2.jar!/" />
-        </SOURCES>
-      </library>
-    </orderEntry>
     <orderEntry type="library" name="domsutils" level="project" />
     <orderEntry type="library" name="sbutil" level="project" />
     <orderEntry type="library" name="centralWebserviceInterface" level="project" />
     <orderEntry type="library" name="commons-logging" level="project" />
+    <orderEntry type="library" name="summa" level="project" />
     <orderEntry type="library" name="domsclient" level="project" />
   </component>
 </module>
