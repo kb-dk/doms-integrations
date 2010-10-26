@@ -49,7 +49,6 @@ import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.Storage;
-import dk.statsbiblioteket.util.Logs;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
@@ -144,28 +143,28 @@ public class DOMSReadableStorage implements Storage {
                 final URI collectionPID = baseConfiguration.getCollectionPID();
                 final String viewID = baseConfiguration.getViewID();
 
-                return domsClient.getModificationTime(collectionPID, viewID,
-                        objectState);
+                return domsClient.getModificationTime(collectionPID.toString(),
+                        viewID, objectState);
             } else {
 
                 long mostRecentTimeStamp = 0;
                 for (BaseDOMSConfiguration currentConfiguration : baseConfigurations
                         .values()) {
 
-                    final URI collectionPID = currentConfiguration
-                            .getCollectionPID();
+                    final String collectionPIDString = currentConfiguration
+                            .getCollectionPID().toString();
                     final String viewID = currentConfiguration.getViewID();
 
                     long currentTimeStamp = domsClient.getModificationTime(
-                            collectionPID, viewID, objectState);
+                            collectionPIDString, viewID, objectState);
 
                     // Update the most recent time-stamp, if necessary.
                     mostRecentTimeStamp = (mostRecentTimeStamp < currentTimeStamp) ? currentTimeStamp
                             : mostRecentTimeStamp;
                 }
-                if (log.isTraceEnabled()) {
-                    log.trace("getModificationTime(): returning"
-                            + " mostRecentTimeStamp: " + mostRecentTimeStamp);
+                if (log.isDebugEnabled()) {
+                    log.debug("getModificationTime(): Returning "
+                            + "mostRecentTimeStamp: " + mostRecentTimeStamp);
                 }
                 return mostRecentTimeStamp;
             }
@@ -196,16 +195,16 @@ public class DOMSReadableStorage implements Storage {
                 iteratorBaseIDs = baseConfigurations.keySet();
             }
 
-            // TODO: This iterator should be registered and returned when it has
-            // been fully implemented.
-            Iterator<Record> recordIterator = new SummaRecordIterator(
+            final Iterator<Record> recordIterator = new SummaRecordIterator(
                     domsClient, baseConfigurations, iteratorBaseIDs, timeStamp,
                     options);
 
             final long iteratorKey = registerIterator(recordIterator);
 
-            log.trace("getRecordsModifedAfter(): returning iteratorKey = "
-                    + iteratorKey);
+            if (log.isDebugEnabled()) {
+                log.debug("getRecordsModifedAfter(): Returning iteratorKey = "
+                        + iteratorKey);
+            }
             return iteratorKey;
         } catch (Exception exception) {
             final String errorMessage = "Failed retrieving records from base "
@@ -220,9 +219,10 @@ public class DOMSReadableStorage implements Storage {
     public List<Record> next(long iteratorKey, int maxRecords)
             throws IOException {
 
-        Logs.log(log, Logs.Level.TRACE,
-                "next(long, int): Called with iteratorKey:", iteratorKey,
-                " maxRecords: ", maxRecords);
+        if (log.isTraceEnabled()) {
+            log.trace("next(long, int): Called with iteratorKey = "
+                    + iteratorKey + " maxRecords = " + maxRecords);
+        }
 
         final Iterator<Record> recordIterator = recordIterators
                 .get(iteratorKey);
@@ -232,7 +232,7 @@ public class DOMSReadableStorage implements Storage {
                     + "key: " + iteratorKey + "). Failed retrieving up to "
                     + maxRecords + " records.";
 
-            Logs.log(log, Logs.Level.WARN, "next(long, int): " + errorMessage);
+            log.warn("next(long, int): " + errorMessage);
             throw new IllegalArgumentException(errorMessage);
         }
 
@@ -255,8 +255,11 @@ public class DOMSReadableStorage implements Storage {
                 resultList.add(recordIterator.next());
                 recordCounter++;
             }
-            Logs.log(log, Logs.Level.TRACE, "next(long, int): returning"
-                    + "resultList", resultList);
+
+            if (log.isDebugEnabled()) {
+                log.debug("next(long, int): Returning " + resultList.size()
+                        + " records.");
+            }
             return resultList;
         } catch (NoSuchElementException noSuchElementException) {
 
@@ -264,8 +267,8 @@ public class DOMSReadableStorage implements Storage {
             // wolves have it...
             recordIterators.remove(iteratorKey);
 
-            if (log.isTraceEnabled()) {
-                log.trace("next(long, int): The iterator is out of records "
+            if (log.isDebugEnabled()) {
+                log.debug("next(long, int): The iterator is out of records "
                         + "(iterator key = " + iteratorKey + ")");
             }
             // Re-throw.
@@ -275,8 +278,9 @@ public class DOMSReadableStorage implements Storage {
 
     public Record next(long iteratorKey) throws IOException {
 
-        Logs.log(log, Logs.Level.TRACE, "next(long): Called with iteratorKey:",
-                iteratorKey);
+        if (log.isTraceEnabled()) {
+            log.trace("next(long): Called with iteratorKey = " + iteratorKey);
+        }
 
         final Iterator<Record> recordIterator = recordIterators
                 .get(iteratorKey);
@@ -292,7 +296,7 @@ public class DOMSReadableStorage implements Storage {
         }
 
         try {
-            log.trace("next(long): returning");
+            log.debug("next(long): Returning.");
             return recordIterator.next();
         } catch (NoSuchElementException noSuchElementException) {
             // The iterator has reached the end and thus it is obsolete. Let the
@@ -333,14 +337,16 @@ public class DOMSReadableStorage implements Storage {
                     .substring(baseDelimiterPosition + 1);
 
             final String viewID = baseConfigurations.get(base).getViewID();
-            final String viewBundle = domsClient.getViewBundle(new URI(
-                    contentModelEntryObjectPID), viewID);
+            final String viewBundle = domsClient.getViewBundle(
+                    contentModelEntryObjectPID, viewID);
 
             final Record resultRecord = new Record(summaRecordID, base,
                     viewBundle.getBytes());
 
-            Logs.log(log, Logs.Level.TRACE, "getRecord(String , QueryOptions):"
-                    + " returning: " + resultRecord);
+            if (log.isDebugEnabled()) {
+                log.debug("getRecord(String , QueryOptions): Returning: "
+                        + resultRecord);
+            }
 
             return resultRecord;
 
@@ -368,56 +374,55 @@ public class DOMSReadableStorage implements Storage {
             resultList.add(getRecord(recordID, options));
         }
 
-        if (log.isTraceEnabled()) {
-            log.trace("getRecords(List<String>, QueryOptions): returning with "
+        if (log.isDebugEnabled()) {
+            log.debug("getRecords(List<String>, QueryOptions): Returning with "
                     + "resultList: " + resultList);
         }
         return resultList;
     }
 
     public void flush(Record record, QueryOptions options) throws IOException {
-        log.warn("flush(Record, QueryOptions): unimplemented method called "
+        log.warn("flush(Record, QueryOptions): Un-implemented method called "
                 + "with record: " + record + " options: " + options);
         throw new NotImplementedException();
     }
 
     public void flush(Record record) throws IOException {
-        log.warn("flush(Record) unimplemented method called with record: "
+        log.warn("flush(Record) Un-implemented method called with record: "
                 + record);
         throw new NotImplementedException();
     }
 
     public void flushAll(List<Record> records, QueryOptions options)
             throws IOException {
-        Logs.log(log, Logs.Level.WARN, "flushAll(List, QueryOptions) "
-                + "unimplemented method called with records: ", records,
-                " options: ", options);
+        log.warn("flushAll(List, QueryOptions) un-implemented method called "
+                + "with records: " + records + " options: " + options);
         throw new NotImplementedException();
     }
 
     public void flushAll(List<Record> records) throws IOException {
-        Logs.log(log, Logs.Level.WARN, "flushAll(List) unimplemented method"
-                + " called with records: ", records);
+        log.warn("flushAll(List): Un-implemented method called with records: "
+                + records);
         throw new NotImplementedException();
     }
 
     public void close() throws IOException {
-        Logs.log(log, Logs.Level.WARN, "close() unimplemented method called");
+        log.warn("close(): Un-implemented method called.");
         throw new NotImplementedException();
     }
 
     public void clearBase(String base) throws IOException {
-        Logs.log(log, Logs.Level.WARN, "clearBase(String) unimplemented "
-                + "method called with base: ", base);
+        log.warn("clearBase(String): Un-implemented method called with base: "
+                + base);
         throw new NotImplementedException();
     }
 
     public String batchJob(String jobName, String base, long minMtime,
             long maxMtime, QueryOptions options) throws IOException {
-        Logs.log(log, Logs.Level.WARN, "batchJob(String, String, long, long, "
-                + "QueryOptions) unimplemented method called with jobName: ",
-                jobName, " base: ", base, " minMtime: ", minMtime,
-                " maxMtime:", maxMtime, " options: ", options);
+        log.warn("batchJob(String, String, long, long, "
+                + "QueryOptions) Un-implemented method called with jobName: "
+                + jobName + " base: " + base + " minMtime: " + minMtime
+                + " maxMtime:" + maxMtime + " options: " + options);
         throw new NotImplementedException();
     }
 
@@ -438,9 +443,8 @@ public class DOMSReadableStorage implements Storage {
             throws ConfigurationException {
 
         if (log.isTraceEnabled()) {
-            Logs.log(log, Logs.Level.TRACE,
-                    "domsLogin(Configuration): called with configuration: ",
-                    configuration);
+            log.trace("domsLogin(Configuration): Called with configuration: "
+                    + configuration);
         }
 
         final String userName = configuration
@@ -466,9 +470,11 @@ public class DOMSReadableStorage implements Storage {
             final URL domsWSAPIEndpoint = new URL(domsWSEndpointURL);
             newDomsClient.login(domsWSAPIEndpoint, userName, password);
 
-            if (log.isTraceEnabled()) {
-                log.trace("domsLogin(Configuration): returning with "
-                        + "newDomsClient: " + newDomsClient);
+            if (log.isDebugEnabled()) {
+                log.debug("domsLogin(Configuration): returning a DOMSWSClient "
+                        + "instance logged in with user = '" + userName
+                        + " and password = '" + password + "' on "
+                        + domsWSEndpointURL);
             }
             return newDomsClient;
         } catch (MalformedURLException malformedURLException) {
@@ -550,6 +556,15 @@ public class DOMSReadableStorage implements Storage {
                     break;
                 }
             }
+
+            if (log.isTraceEnabled()) {
+                log
+                        .trace("initBaseConfigurations(Configuration, Map<String, "
+                                + "BaseDOMSConfiguration>): Successfully added "
+                                + baseConfigurations.size()
+                                + " base configurations to the internal map. Returning.");
+            }
+
         } catch (Exception exception) {
 
             final String errorMessage = "Could not retrieve the collection base (base ID = '"
