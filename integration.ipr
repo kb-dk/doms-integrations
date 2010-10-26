@@ -288,18 +288,15 @@
   <component name="libraryTable">
     <library name="domsutils">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/jars/surveyable_interface.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/jars/webservice-common.jar!/" />
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/jars/surveyable_impl.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.11/jars/webservice-common.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.11/jars/surveyable_interface.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.11/jars/surveyable_impl.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/src/domsutil-0.0.10-src.zip!/domsutil-0.0.10/modules/surveyable/surveyable_interface/src" />
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/src/domsutil-0.0.10-src.zip!/domsutil-0.0.10/modules/surveyable/surveyable_impl/src" />
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/src/domsutil-0.0.10-src.zip!/domsutil-0.0.10/modules/surveyable/surveyable_interface/tempsrc" />
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/src/domsutil-0.0.10-src.zip!/domsutil-0.0.10/modules/surveyable/surveyable_impl/tempsrc" />
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/src/domsutil-0.0.10-src.zip!/domsutil-0.0.10/modules/webservice-common/src" />
-        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.10/src/domsutil-0.0.10-src.zip!/domsutil-0.0.10/modules/webservice-common/tempsrc" />
+        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.11/src/surveyable_interface-src.zip!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.11/src/surveyable_impl-src.zip!/" />
+        <root url="jar://$PROJECT_DIR$/lib/domsutil-0.0.11/src/webservice-common-src.zip!/" />
       </SOURCES>
     </library>
     <library name="centralWebserviceInterface">
@@ -320,13 +317,13 @@
         <root url="jar://$PROJECT_DIR$/lib/commons-logging-1.1.1/src/commons-logging-1.1.1-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="sbutils">
+    <library name="sbutil">
       <CLASSES>
-        <root url="jar://$PROJECT_DIR$/lib/sbutils-0.4.8/jars/sbutil-0.4.8.jar!/" />
+        <root url="jar://$PROJECT_DIR$/lib/sbutil-0.5.2/jars/sbutil-0.5.2.jar!/" />
       </CLASSES>
       <JAVADOC />
       <SOURCES>
-        <root url="jar://$PROJECT_DIR$/lib/sbutils-0.4.8/src/sbutil-0.4.8-src.zip!/sbutil-0.4.8/src" />
+        <root url="jar://$PROJECT_DIR$/lib/sbutil-0.5.2/src/sbutil-0.5.2-src.zip!/sbutil-0.5.2/src" />
       </SOURCES>
     </library>
     <library name="domsclient">
