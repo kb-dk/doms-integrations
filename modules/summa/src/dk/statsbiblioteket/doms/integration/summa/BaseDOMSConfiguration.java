@@ -43,15 +43,6 @@ public class BaseDOMSConfiguration {
     private final URI collectionPID;
 
     /**
-     * PID (UUID) of the DOMS content model entry object which identifies the
-     * anchor/root objects which the Summa base is associated with.
-     * 
-     * TODO: Check whether this information should still be here. It is probably
-     * obsolete.
-     */
-    private final URI contentModelEntryObjectPID;
-
-    /**
      * ID of the view which the DOMS must use when extracting objects for
      * clients requesting objects from the Summa base associated with this
      * <code>BaseDOMSConfiguration</code> instance.
@@ -60,21 +51,15 @@ public class BaseDOMSConfiguration {
 
     /**
      * Create a new <code>BaseDOMSConfiguration</code> instance which points out
-     * a view of a specific content model entry object in a specific collection,
-     * stored in the DOMS.
+     * a view of a specific collection, stored in the DOMS.
      * 
      * @param collectionPID
      *            PID of the collection i question.
-     * @param contentModelEntryObjectPID
-     *            The PID of a content model entry object in the specified
-     *            collection.
      * @param viewID
      *            ID of a view of the content model entry object.
      */
-    public BaseDOMSConfiguration(URI collectionPID,
-            URI contentModelEntryObjectPID, String viewID) {
+    public BaseDOMSConfiguration(URI collectionPID, String viewID) {
         this.collectionPID = collectionPID;
-        this.contentModelEntryObjectPID = contentModelEntryObjectPID;
         this.viewID = viewID;
     }
 
@@ -88,20 +73,8 @@ public class BaseDOMSConfiguration {
     }
 
     /**
-     * Get the PID of the content model entry object held by this instance. The
-     * object is a part of the collection identified by the PID returned by
-     * {@link #getCollectionPID()}.
-     * 
-     * @return the PID of the content model entry object.
-     */
-    public URI getContentModelEntryObjectPID() {
-        return contentModelEntryObjectPID;
-    }
-
-    /**
      * Get the view ID held by this instance. This ID identifies a view of the
-     * content model entry object specified by the PID returned by
-     * {@link #getContentModelEntryObjectPID()}.
+     * content model entry object of the collection.
      * 
      * @return the ID of the view.
      */
@@ -118,10 +91,6 @@ public class BaseDOMSConfiguration {
         int result = 1;
         result = prime * result
                 + ((collectionPID == null) ? 0 : collectionPID.hashCode());
-        result = prime
-                * result
-                + ((contentModelEntryObjectPID == null) ? 0
-                        : contentModelEntryObjectPID.hashCode());
         result = prime * result + ((viewID == null) ? 0 : viewID.hashCode());
         return result;
     }
@@ -146,14 +115,6 @@ public class BaseDOMSConfiguration {
                 return false;
             }
         } else if (!collectionPID.equals(other.collectionPID)) {
-            return false;
-        }
-        if (contentModelEntryObjectPID == null) {
-            if (other.contentModelEntryObjectPID != null) {
-                return false;
-            }
-        } else if (!contentModelEntryObjectPID
-                .equals(other.contentModelEntryObjectPID)) {
             return false;
         }
         if (viewID == null) {
