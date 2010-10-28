@@ -38,7 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.TreeMap;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -56,6 +55,12 @@ import dk.statsbiblioteket.summa.storage.api.Storage;
 public class DOMSReadableStorage implements Storage {
 
     private static final Log log = LogFactory.getLog(DOMSReadableStorage.class);
+
+    /**
+     * Three hours in milliseconds. This is the expiration time for the iterator
+     * keys returned by this storage.
+     */
+    private static final long THREE_HOURS = 10800000;
 
     /**
      * The delimiter inserted between the Summa base name and the DOMS object
@@ -77,16 +82,10 @@ public class DOMSReadableStorage implements Storage {
     private final Map<String, BaseDOMSConfiguration> baseConfigurations;
 
     /**
-     * <code>Map</code> containing all record iterators instantiated by methods
-     * returning an iterator over their result sets.
-     * <p/>
-     * FIXME! Currently an iterator and its underlying collection is not
-     * deleted/garbage collected if the iterator is not read to the end, that
-     * is, until a NoSuchElementException is thrown! Clients do not explicitly
-     * indicate when they are done with their iterators which makes it difficult
-     * (i.e. impossible) to determine when it is OK to purge them.
+     * A registry containing all record iterators instantiated by methods
+     * returning a key associated with an iterator over their result sets.
      */
-    private final Map<Long, Iterator<Record>> recordIterators;
+    private final SelfCleaningObjectRegistry<Iterator<Record>> recordIterators;
 
     /**
      * Create a <code>DOMSReadableStorage</code> instance based on the
@@ -103,7 +102,8 @@ public class DOMSReadableStorage implements Storage {
             throws ConfigurationException {
 
         baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
-        recordIterators = new TreeMap<Long, Iterator<Record>>();
+        recordIterators = new SelfCleaningObjectRegistry<Iterator<Record>>(
+                THREE_HOURS);
 
         initBaseConfigurations(configuration, baseConfigurations);
         domsClient = domsLogin(configuration);
@@ -112,10 +112,10 @@ public class DOMSReadableStorage implements Storage {
     /**
      * Get the time-stamp for when the latest modification occurred in the DOMS
      * collection view identified by <code>base</code>. This method will resolve
-     * <code>base</code> to a DOMS collection, content model entry object and
-     * view, using the configuration given to this
-     * <code>DOMSReadableStorage</code> instance, and query the DOMS for any
-     * changes. Please see the interface documentation for further details.
+     * <code>base</code> to a DOMS collection and view, using the configuration
+     * given to this <code>DOMSReadableStorage</code> instance, and query the
+     * DOMS for any changes. Please see the interface documentation for further
+     * details.
      * 
      * @param summaBaseID
      *            Summa base ID pointing out the DOMS collection and view to
@@ -199,7 +199,7 @@ public class DOMSReadableStorage implements Storage {
                     domsClient, baseConfigurations, iteratorBaseIDs, timeStamp,
                     options);
 
-            final long iteratorKey = registerIterator(recordIterator);
+            final long iteratorKey = recordIterators.register(recordIterator);
 
             if (log.isDebugEnabled()) {
                 log.debug("getRecordsModifedAfter(): Returning iteratorKey = "
@@ -217,38 +217,30 @@ public class DOMSReadableStorage implements Storage {
     }
 
     public List<Record> next(long iteratorKey, int maxRecords)
-            throws IOException {
+            throws IOException, IllegalArgumentException,
+            NoSuchElementException {
 
         if (log.isTraceEnabled()) {
             log.trace("next(long, int): Called with iteratorKey = "
                     + iteratorKey + " maxRecords = " + maxRecords);
         }
 
-        final Iterator<Record> recordIterator = recordIterators
-                .get(iteratorKey);
-
-        if (recordIterator == null) {
-            final String errorMessage = "Unknown record iterator (iterator "
-                    + "key: " + iteratorKey + "). Failed retrieving up to "
-                    + maxRecords + " records.";
-
-            log.warn("next(long, int): " + errorMessage);
-            throw new IllegalArgumentException(errorMessage);
-        }
-
-        if (recordIterator.hasNext() == false) {
-            // The iterator has reached the end and thus it is obsolete. Let the
-            // wolves have it...
-            recordIterators.remove(iteratorKey);
-
-            final String errorMessage = "The iterator is out of records "
-                    + "(iterator key = " + iteratorKey + ")";
-
-            log.warn("next(long, int): " + errorMessage);
-            throw new NoSuchElementException(errorMessage);
-        }
-
         try {
+            final Iterator<Record> recordIterator = recordIterators
+                    .get(iteratorKey);
+
+            if (recordIterator.hasNext() == false) {
+                // The iterator has reached the end and thus it is obsolete. Let
+                // the wolves have it...
+                recordIterators.remove(iteratorKey);
+
+                final String errorMessage = "The iterator is out of records "
+                        + "(iterator key = " + iteratorKey + ")";
+
+                log.warn("next(long, int): " + errorMessage);
+                throw new NoSuchElementException(errorMessage);
+            }
+
             final List<Record> resultList = new LinkedList<Record>();
             int recordCounter = 0;
             while (recordIterator.hasNext() && recordCounter < maxRecords) {
@@ -261,55 +253,65 @@ public class DOMSReadableStorage implements Storage {
                         + " records.");
             }
             return resultList;
-        } catch (NoSuchElementException noSuchElementException) {
+        } catch (UnknownKeyException unknownKeyException) {
 
-            // The iterator has reached the end and thus it is obsolete. Let the
-            // wolves have it...
-            recordIterators.remove(iteratorKey);
+            // The iterator key is unknown to the registry. It may be because it
+            // has expired.
+            final String errorMessage = "Unknown iterator (iterator key = "
+                    + iteratorKey + "). Failed retrieving up to " + maxRecords
+                    + " records. Has the key expired?";
+            log.warn("next(long, int): " + errorMessage);
 
-            if (log.isDebugEnabled()) {
-                log.debug("next(long, int): The iterator is out of records "
-                        + "(iterator key = " + iteratorKey + ")");
-            }
-            // Re-throw.
-            throw noSuchElementException;
+            throw new IllegalArgumentException(errorMessage,
+                    unknownKeyException);
         }
     }
 
-    public Record next(long iteratorKey) throws IOException {
+    public Record next(long iteratorKey) throws IOException,
+            IllegalArgumentException, NoSuchElementException {
 
         if (log.isTraceEnabled()) {
             log.trace("next(long): Called with iteratorKey = " + iteratorKey);
         }
 
-        final Iterator<Record> recordIterator = recordIterators
-                .get(iteratorKey);
-
-        if (recordIterator == null) {
-
-            final String errorMessage = "Unknown record iterator (iterator key: "
-                    + iteratorKey + "). Failed retrieving a record.";
-
-            log.warn("next(long): " + errorMessage);
-
-            throw new IllegalArgumentException(errorMessage);
-        }
-
         try {
-            log.debug("next(long): Returning.");
+            final Iterator<Record> recordIterator = recordIterators
+                    .get(iteratorKey);
+
+            log.debug("next(long): Returning next element for iterator key: "
+                    + iteratorKey);
             return recordIterator.next();
         } catch (NoSuchElementException noSuchElementException) {
             // The iterator has reached the end and thus it is obsolete. Let the
             // wolves have it...
-            recordIterators.remove(iteratorKey);
+            try {
+                recordIterators.remove(iteratorKey);
+            } catch (UnknownKeyException unknownKeyException) {
+                log.error("next(long): Failed removing iterator from the "
+                        + "registry. This is not possible!",
+                        unknownKeyException);
+                // Just continue although this is probably due to an error
+                // somewhere, as the storage will not break because of this.
+            }
 
-            if (log.isTraceEnabled()) {
-                log.trace("The iterator is out of records (iterator key = "
-                        + iteratorKey + ")");
+            if (log.isDebugEnabled()) {
+                log.debug("next(long): The iterator is out of records ("
+                        + "iterator key = " + iteratorKey + ")");
             }
 
             // Re-throw.
             throw noSuchElementException;
+        } catch (UnknownKeyException unknownKeyException) {
+
+            // The iterator key is unknown to the registry. It may be because it
+            // has expired.
+
+            final String errorMessage = "Unknown iterator (iterator key = "
+                    + iteratorKey + "). Has the key expired?";
+            log.warn("next(long): " + errorMessage);
+
+            throw new IllegalArgumentException(errorMessage,
+                    unknownKeyException);
         }
     }
 
@@ -325,20 +327,20 @@ public class DOMSReadableStorage implements Storage {
         try {
             // All records previously returned by the DOMS storage have had the
             // base name prepended to the DOMS entry object PID. Thus, we know
-            // that there is a base name and an underscore in the beginning of
-            // the ID.
+            // that there is a base name and a RECPRD_ID_DELIMITER in the
+            // beginning of the ID.
             final int baseDelimiterPosition = summaRecordID
                     .indexOf(RECORD_ID_DELIMITER);
 
             final String base = summaRecordID.substring(0,
                     baseDelimiterPosition);
 
-            final String contentModelEntryObjectPID = summaRecordID
+            final String entryObjectPID = summaRecordID
                     .substring(baseDelimiterPosition + 1);
 
             final String viewID = baseConfigurations.get(base).getViewID();
-            final String viewBundle = domsClient.getViewBundle(
-                    contentModelEntryObjectPID, viewID);
+            final String viewBundle = domsClient.getViewBundle(entryObjectPID,
+                    viewID);
 
             final Record resultRecord = new Record(summaRecordID, base,
                     viewBundle.getBytes());
@@ -535,17 +537,11 @@ public class DOMSReadableStorage implements Storage {
 
                 final URI collectionPID = new URI(collectionURI);
 
-                final String collectionContentModelURI = subConfiguration
-                        .getString(ConfigurationKeys.COLLECTION_ENTRY_CONTENT_MODEL_PID);
-
-                final URI entryContentModelPID = new URI(
-                        collectionContentModelURI);
-
                 final String viewID = subConfiguration
                         .getString(ConfigurationKeys.VIEW_ID);
 
                 BaseDOMSConfiguration newBaseConfig = new BaseDOMSConfiguration(
-                        collectionPID, entryContentModelPID, viewID);
+                        collectionPID, viewID);
 
                 previousConfig = baseConfigurationsMap.put(baseID,
                         newBaseConfig);
@@ -586,49 +582,4 @@ public class DOMSReadableStorage implements Storage {
         }
     }
 
-    /**
-     * Register <code>iterator</code> in the internal iterator map and return
-     * the iterator key.
-     * <p/>
-     * This method will attempt to generate a random, non-negative iterator key
-     * which is not already used by the iterator map. However, if this fails it
-     * will throw an exception.
-     * 
-     * @param iterator
-     *            a <code>Record</code> iterator to add to the map.
-     * @return the key associated with the iterator.
-     * @throws Exception
-     *             if no vacant iterator ID could be found.
-     */
-    private synchronized long registerIterator(Iterator<Record> iterator)
-            throws Exception {
-
-        if (log.isTraceEnabled()) {
-            log.trace("registerIterator(Iterator<Record>): Called with "
-                    + "iterator: " + iterator);
-        }
-
-        long iteratorKey = Math.round(Long.MAX_VALUE * Math.random());
-        long emergencyBrake = 0;
-
-        while (recordIterators.containsKey(iteratorKey)) {
-            iteratorKey = Math.round(Long.MAX_VALUE * Math.random());
-            emergencyBrake++;
-            if (emergencyBrake == 0) {
-                final String errorMessage = "Unable to produce an iterator key.";
-
-                log.warn("registerIterator(Iterator<Record> iteator): "
-                        + errorMessage);
-                throw new Exception(errorMessage);
-            }
-        }
-        recordIterators.put(iteratorKey, iterator);
-
-        if (log.isTraceEnabled()) {
-            log.trace("registerIterator(Iterator<Record> iteator): returning "
-                    + "with iteratorKey: " + iteratorKey);
-        }
-
-        return iteratorKey;
-    }
 }
