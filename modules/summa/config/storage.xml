@@ -59,16 +59,16 @@
         </entry>
 
 
-<!--
-        <entry>
-            <key>summa.storage.database.username</key>
-            <value class="string"></value>
-        </entry>
-        <entry>
-            <key>summa.storage.database.password</key>
-            <value class="string"></value>
-        </entry>
--->
+        <!--
+                <entry>
+                    <key>summa.storage.database.username</key>
+                    <value class="string"></value>
+                </entry>
+                <entry>
+                    <key>summa.storage.database.password</key>
+                    <value class="string"></value>
+                </entry>
+        -->
 
         <!--
         * The location of the database to use/create. This will be relative to
@@ -114,32 +114,29 @@ This is not strictly necessary, but provides some optimization -->
             <key>DOMSUserName</key>
             <value class="string">fedoraAdmin</value>
         </entry>
-
         <entry>
             <key>DOMSPassword</key>
             <value class="string">fedoraAdminPass</value>
         </entry>
-
         <entry>
             <key>DOMSWebserviceURL</key>
-            <value class="string">http://alhena:7980/centralDomsWebservice/central/?wsdl</value>
+            <value class="string">http://alhena:7980/centralDomsWebservice/central/?wsdl
+            </value>
         </entry>
 
+        <!-- Currently working example entry. -->
         <entry>
             <key>accessibleCollectionBases</key>
             <value class="list">
                 <xproperties>
                     <entry>
                         <key>collectionBaseID</key>
-                        <value class="string">doms_radioTVCollection</value>
+                        <value class="string">radioTVCollection</value>
                     </entry>
                     <entry>
                         <key>collectionPID</key>
-                        <value class="string">doms:RadioTV_Collection</value>
-                    </entry>
-                    <entry>
-                        <key>collectionEntryContentModelPID</key>
-                        <value class="string">doms:ContentModel_Program</value>
+                        <value class="string">doms:RadioTV_Collection
+                        </value>
                     </entry>
                     <entry>
                         <key>viewID</key>
@@ -148,6 +145,7 @@ This is not strictly necessary, but provides some optimization -->
                 </xproperties>
             </value>
         </entry>
+
 
     </xproperties>
 </xproperties>
