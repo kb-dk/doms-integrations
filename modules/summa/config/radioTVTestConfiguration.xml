@@ -21,7 +21,7 @@
                 <xproperties>
                     <entry>
                         <key>collectionBaseID</key>
-                        <value class="string">radioTVCollection</value>
+                        <value class="string">doms_radioTVCollection</value>
                     </entry>
                     <entry>
                         <key>collectionPID</key>
