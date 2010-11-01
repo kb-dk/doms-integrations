@@ -28,45 +28,42 @@ package dk.statsbiblioteket.doms.integration.summa;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
- *
+ * 
  */
-public class InitialisationError extends Exception {
+public class DOMSCommunicationError extends Error {
 
     /**
      * 
      */
-    private static final long serialVersionUID = 1595203632868545539L;
+    private static final long serialVersionUID = 6514319913155583890L;
 
     /**
      * 
      */
-    public InitialisationError() {
-        // TODO Auto-generated constructor stub
+    public DOMSCommunicationError() {
+
     }
 
     /**
      * @param message
      */
-    public InitialisationError(String message) {
+    public DOMSCommunicationError(String message) {
         super(message);
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param cause
      */
-    public InitialisationError(Throwable cause) {
+    public DOMSCommunicationError(Throwable cause) {
         super(cause);
-        // TODO Auto-generated constructor stub
     }
 
     /**
      * @param message
      * @param cause
      */
-    public InitialisationError(String message, Throwable cause) {
+    public DOMSCommunicationError(String message, Throwable cause) {
         super(message, cause);
-        // TODO Auto-generated constructor stub
     }
 
 }

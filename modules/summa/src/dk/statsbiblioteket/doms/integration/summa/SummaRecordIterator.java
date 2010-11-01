@@ -71,8 +71,7 @@ class SummaRecordIterator implements Iterator<Record> {
 
     SummaRecordIterator(DOMSWSClient domsClient,
             Map<String, BaseDOMSConfiguration> baseConfigurations,
-            Set<String> summaBaseIDs, long timeStamp, QueryOptions options)
-            throws InitialisationError {
+            Set<String> summaBaseIDs, long timeStamp, QueryOptions options) {
 
         this.domsClient = domsClient;
         this.baseConfigurations = baseConfigurations;
@@ -80,49 +79,34 @@ class SummaRecordIterator implements Iterator<Record> {
         queryOptions = options;
         baseRecordDescriptions = new TreeSet<BaseRecordDescription>();
         baseStates = createBaseStatesMap(summaBaseIDs);
-        try {
-            fillCache();
-        } catch (ServerOperationFailed serverOperationFailed) {
-            throw new InitialisationError(serverOperationFailed);
-        }
     }
 
-    /*
-     * (non-Javadoc)
-     * 
+    /**
+     * @throws DOMSCommunicationError
+     *             if the operation fails due to a communication or server
+     *             error.
      * @see java.util.Iterator#hasNext()
      */
-    public boolean hasNext() {
+    public boolean hasNext() throws DOMSCommunicationError {
         if (log.isTraceEnabled()) {
             log.trace("hasNext(): Entering.");
         }
 
-        if (!baseRecordDescriptions.isEmpty()) {
-            return true;
-        } else {
-            // Attempt filling the cache and return the answer.
-            try {
-                fillCache();
-            } catch (ServerOperationFailed serverOperationFailed) {
-                // The DOMS died. Log the event and tell the caller that there
-                // are no more records.
+        // Make sure that the cache holds base record descriptions for all
+        // active summa base IDs.
+        fillCache();
 
-                log.warn("hasNext(): Failed initialising the RecordDescription"
-                        + " cache.", serverOperationFailed);
-            }
-
-            final boolean hasNextElement = !baseRecordDescriptions.isEmpty();
-            if (log.isTraceEnabled()) {
-                log.trace("hasNext(): Returning '" + hasNextElement + "'");
-            }
-
-            return hasNextElement;
+        final boolean hasNextElement = !baseRecordDescriptions.isEmpty();
+        if (log.isTraceEnabled()) {
+            log.trace("hasNext(): Returning '" + hasNextElement + "'");
         }
+        return hasNextElement;
     }
 
-    /*
-     * (non-Javadoc)
-     * 
+    /**
+     * @throws DOMSCommunicationError
+     *             if the operation fails due to a communication or server
+     *             error.
      * @see java.util.Iterator#next()
      */
     public Record next() {
@@ -130,21 +114,32 @@ class SummaRecordIterator implements Iterator<Record> {
             log.trace("next(): Entering.");
         }
 
+        // The hasNext() method will ensure that the BaseRecordDescription cache
+        // is re-filled if necessary/possible.
         if (!hasNext()) {
             throw new NoSuchElementException();
         }
 
+        // Get the next RecordDescription from the cache.
+        final BaseRecordDescription baseRecordDescription = getNextBaseRecordDescription();
         try {
-            // Get the next RecordDescription from the cache, build a Record and
-            // return it.
-            final Record nextRecord = buildRecord(getNextBaseRecordDescription());
+            // Build a Record and return it.
+            final Record nextRecord = buildRecord(baseRecordDescription);
 
             if (log.isTraceEnabled()) {
                 log.trace("next(): Returning record: " + nextRecord);
             }
             return nextRecord;
         } catch (ServerOperationFailed serverOperationFailed) {
-            throw new NoSuchElementException();
+            // The Record could not be built due to a communication/server
+            // error. Push back the BaseRecordDescription and hope for success
+            // later.
+
+            pushBackBaseRecordDescription(baseRecordDescription);
+            throw new DOMSCommunicationError(
+                    "next() operation failed for base ID: "
+                            + baseRecordDescription.getSummaBaseID(),
+                    serverOperationFailed);
         }
     }
 
@@ -158,7 +153,7 @@ class SummaRecordIterator implements Iterator<Record> {
     }
 
     /**
-     * Get the next BaseRecordDescription from the sorted tree
+     * Get the next <code>BaseRecordDescription</code> from the sorted tree
      * <code>baseRecordDescriptions</code> and update the instance counter for
      * the Summa base which its <code>RecordDescription</code> was retrieved
      * from.
@@ -166,12 +161,8 @@ class SummaRecordIterator implements Iterator<Record> {
      * @return the <code>BaseRecordDescription</code> in
      *         <code>baseRecordDescriptions</code> containing the
      *         <code>RecordDescription</code> with the lowest time-stamp.
-     * @throws ServerOperationFailed
-     *             if the retrieval of <code>RecordDescription</code> instances
-     *             from the DOMS fails.
      */
-    private BaseRecordDescription getNextBaseRecordDescription()
-            throws ServerOperationFailed {
+    private BaseRecordDescription getNextBaseRecordDescription() {
 
         if (log.isTraceEnabled()) {
             log.trace("getNextBaseRecordDescription(): Entering.");
@@ -189,16 +180,50 @@ class SummaRecordIterator implements Iterator<Record> {
         summaBaseState
                 .setCurrentRecordDescriptionCount(currentRecordDescriptionCount);
 
-        if (currentRecordDescriptionCount == 0) {
-            // Just fetched the last element from this Summa base. Refill...
-            fetchBaseRecordDescriptions(summaBaseID);
-        }
-
         if (log.isTraceEnabled()) {
             log.trace("getNextBaseRecordDescription(): Returning "
                     + "BaseRecordDescription: " + baseRecordDescription);
         }
         return baseRecordDescription;
+    }
+
+    /**
+     * Return (i.e. push back) a <code>BaseRecordDescription</code> to the
+     * sorted tree <code>baseRecordDescriptions</code> and update the instance
+     * counter for the Summa base which its <code>RecordDescription</code> was
+     * retrieved from.
+     * <p/>
+     * 
+     * This method enables the iterator to undo a next() operation if it fails
+     * to build a <code>Record</code> due to communication/server errors.
+     * 
+     * @param baseRecordDescription
+     *            the <code>BaseRecordDescription</code> in
+     *            <code>baseRecordDescriptions</code> containing the
+     *            <code>RecordDescription</code> with the lowest time-stamp.
+     */
+    private void pushBackBaseRecordDescription(
+            BaseRecordDescription baseRecordDescription) {
+
+        if (log.isTraceEnabled()) {
+            log.trace("pushBackBaseRecordDescription(): Entering. "
+                    + "baseRecordDescription = " + baseRecordDescription);
+        }
+
+        baseRecordDescriptions.add(baseRecordDescription);
+
+        final String summaBaseID = baseRecordDescription.getSummaBaseID();
+        final BaseState summaBaseState = baseStates.get(summaBaseID);
+
+        final long currentRecordDescriptionCount = summaBaseState
+                .getCurrentRecordDescriptionCount() + 1;
+
+        summaBaseState
+                .setCurrentRecordDescriptionCount(currentRecordDescriptionCount);
+
+        if (log.isTraceEnabled()) {
+            log.trace("pushBackBaseRecordDescription(): Returning.");
+        }
     }
 
     /**
@@ -237,11 +262,11 @@ class SummaRecordIterator implements Iterator<Record> {
      * <code>RECORD_COUNT_PER_RETRIEVAL</code> constant and will be added to the
      * <code>baseRecordDescriptions</code> attribute.
      * 
-     * @throws ServerOperationFailed
+     * @throws DOMSCommunicationError
      *             if any problems are encountered while retriving
      *             <code>RecordDescription</code> instances from the DOMS.
      */
-    private void fillCache() throws ServerOperationFailed {
+    private void fillCache() throws DOMSCommunicationError {
 
         if (log.isTraceEnabled()) {
             log.trace("fillCache(): Entering.");
@@ -264,10 +289,15 @@ class SummaRecordIterator implements Iterator<Record> {
      * and add them to the <code>baseRecordDescriptions Set</code> attribute.
      * 
      * @param summaBaseID
-     * @throws ServerOperationFailed
+     *            the ID to use for resolving the collection PID and view ID to
+     *            use when building the <code>BaseRecordDescription</code>
+     *            instances.
+     * @throws DOMSCommunicationError
+     *             if the operation fails due to a communication or server
+     *             error.
      */
     private void fetchBaseRecordDescriptions(String summaBaseID)
-            throws ServerOperationFailed {
+            throws DOMSCommunicationError {
 
         if (log.isTraceEnabled()) {
             log.trace("fetchBaseRecordDescriptions(String): Entering. "
@@ -288,82 +318,123 @@ class SummaRecordIterator implements Iterator<Record> {
 
         final long currentRecordIndex = summaBaseState
                 .getNextRecordDescriptionIndex();
-        try {
-            retrievedRecordDescriptions = domsClient.getModifiedEntryObjects(
-                    collectionPIDString, viewID, startTimeStamp, objectState,
-                    currentRecordIndex, RECORD_COUNT_PER_RETRIEVAL);
 
-            // Remove the base information from the base state map if there are
-            // no more record descriptions available.
-            if (retrievedRecordDescriptions.isEmpty()) {
-                baseStates.remove(summaBaseID);
-                retrievedRecordDescriptions = new LinkedList<RecordDescription>();
-                if (log.isTraceEnabled()) {
-                    log.trace("fetchBaseRecordDescriptions(String): The DOMS "
-                            + "has no more records for this base (base ID = '"
-                            + summaBaseID + "'. Removing it from the map of "
-                            + "active base IDs.");
-                }
-            } else {
+        retrievedRecordDescriptions = retrieveRecordDescriptions(
+                collectionPIDString, viewID, objectState, currentRecordIndex);
 
-                final long currentCount = summaBaseState
-                        .getCurrentRecordDescriptionCount();
-                if (currentCount != 0) {
-                    log.warn("fetchBaseRecordDescriptions(String): The cache"
-                            + " size for this base ID (" + summaBaseID
-                            + ") was non-zero (actual size = " + currentCount
-                            + ") when this re-fill was requested.");
-                }
-                // The current count is supposed to be zero, however, use
-                // addition to avoid any errors.
-                summaBaseState.setCurrentRecordDescriptionCount(currentCount
-                        + retrievedRecordDescriptions.size());
-
-                // Move the index forward with the amount of records just
-                // retrieved.
-                summaBaseState.setNextRecordDescriptionIndex(summaBaseState
-                        .getNextRecordDescriptionIndex()
-                        + retrievedRecordDescriptions.size());
-            }
-
-            // Build BaseRecordDescription instances for each RecordDescription
-            // retrieved.
-            for (RecordDescription recordDescription : retrievedRecordDescriptions) {
-                BaseRecordDescription baseRecordDescription = new BaseRecordDescription(
-                        summaBaseID, recordDescription);
-                baseRecordDescriptions.add(baseRecordDescription);
-            }
-
+        // Remove the base information from the base state map if there are
+        // no more record descriptions available.
+        if (retrievedRecordDescriptions.isEmpty()) {
+            baseStates.remove(summaBaseID);
+            retrievedRecordDescriptions = new LinkedList<RecordDescription>();
             if (log.isTraceEnabled()) {
-                log.trace("fetchBaseRecordDescriptions(String): Returning "
-                        + "after adding " + retrievedRecordDescriptions.size()
-                        + " record decscriptions to the cache for the Summa"
-                        + " base ID: " + summaBaseID);
+                log.trace("fetchBaseRecordDescriptions(String): The DOMS "
+                        + "has no more records for this base (base ID = '"
+                        + summaBaseID + "'. Removing it from the map of "
+                        + "active base IDs.");
             }
+        } else {
 
-        } catch (ServerOperationFailed serverOperationFailed) {
-            final String errorMessage = "Failed retrieving up to "
-                    + RECORD_COUNT_PER_RETRIEVAL + "records " + "(startTime = "
-                    + startTimeStamp + " start index = " + currentRecordIndex
-                    + " viewID = " + viewID + " objectState = " + objectState
-                    + ") from collection (PID = " + collectionPIDString + ").";
+            final long currentCount = summaBaseState
+                    .getCurrentRecordDescriptionCount();
+            if (currentCount != 0) {
+                log.warn("fetchBaseRecordDescriptions(String): The cache"
+                        + " size for this base ID (" + summaBaseID
+                        + ") was non-zero (actual size = " + currentCount
+                        + ") when this re-fill was requested.");
+            }
+            // The current count is supposed to be zero, however, use
+            // addition to avoid any errors.
+            summaBaseState.setCurrentRecordDescriptionCount(currentCount
+                    + retrievedRecordDescriptions.size());
 
-            log.warn("fetchBaseRecordDescriptions(String): " + errorMessage,
-                    serverOperationFailed);
-            throw serverOperationFailed;
+            // Move the index forward with the amount of records just
+            // retrieved.
+            summaBaseState.setNextRecordDescriptionIndex(summaBaseState
+                    .getNextRecordDescriptionIndex()
+                    + retrievedRecordDescriptions.size());
+        }
+
+        // Build BaseRecordDescription instances for each RecordDescription
+        // retrieved.
+        for (RecordDescription recordDescription : retrievedRecordDescriptions) {
+            final BaseRecordDescription baseRecordDescription = new BaseRecordDescription(
+                    summaBaseID, recordDescription);
+            baseRecordDescriptions.add(baseRecordDescription);
+        }
+
+        if (log.isTraceEnabled()) {
+            log.trace("fetchBaseRecordDescriptions(String): Returning "
+                    + "after adding " + retrievedRecordDescriptions.size()
+                    + " record decscriptions to the cache for the Summa"
+                    + " base ID: " + summaBaseID);
         }
     }
 
     /**
+     * Retrieve a chunk of <code>RecordDescriptions</code> from the DOMS for all
+     * objects that have been modified or have modified objects associated in
+     * the specified view. The size of the chunk is specified by the constant
+     * <code>RECORD_COUNT_PER_RETRIEVAL</code>.
+     * 
+     * @param collectionPIDString
+     *            The PID of the collection to retrieve
+     *            <code>RecordDescription</code> instances from.
+     * @param viewID
+     *            ID of the view to use when checking for modifications.
+     * @param objectState
+     *            The state an object must be in, in order to be a candidate for
+     *            retrieval.
+     * @param offsetIndex
+     *            The index in the sequence of modified records to start
+     *            retrieval from.
+     * @return a <code>List</code> of
+     *         <code>RecordDescription<code> instances identifying DOMS objects
+     *          which have been modified.
+     * @throws DOMSCommunicationError
+     *             if the retrieval fails due to a communication or server
+     *             error.
+     */
+    private List<RecordDescription> retrieveRecordDescriptions(
+            String collectionPIDString, String viewID, String objectState,
+            long offsetIndex) throws DOMSCommunicationError {
+
+        try {
+            return domsClient.getModifiedEntryObjects(collectionPIDString,
+                    viewID, startTimeStamp, objectState, offsetIndex,
+                    RECORD_COUNT_PER_RETRIEVAL);
+        } catch (ServerOperationFailed serverOperationFailed) {
+            final String errorMessage = "Failed retrieving up to "
+                    + RECORD_COUNT_PER_RETRIEVAL + "records " + "(startTime = "
+                    + startTimeStamp + " start index = " + offsetIndex
+                    + " viewID = " + viewID + " objectState = " + objectState
+                    + ") from the specified collection (PID = "
+                    + collectionPIDString + ").";
+
+            log.warn("retrieveRecordDescriptions(String, String, "
+                    + "String, long): " + errorMessage, serverOperationFailed);
+
+            // Give up... Let the fault barrier handle this.
+            throw new DOMSCommunicationError(errorMessage, serverOperationFailed);
+        }
+    }
+
+    /**
+     * Build a Summa <code>Record</code> from the information provided by the
+     * <code>BaseRecordDescription</code> provided by
+     * <code>baseRecordDescription</code>.
      * 
      * @param baseRecordDescription
-     * @throws NoSuchElementException
-     *             if no <code>Record</code> could be built from
-     *             </code>baseRecordDescription</code>
+     *            a <code>BaseRecordDescription</code> instance containing the
+     *            necessary information for building a <code>Record</code>.
+     * @throws ServerOperationFailed
+     *             if no <code>Record</code> could be built due to a
+     *             communication or DOMS server error.
      * @return a Summa Storage <code>Record</code> instance built from the
      *         information provided by </code>baseRecordDescription</code>.
      */
-    private Record buildRecord(BaseRecordDescription baseRecordDescription) {
+    private Record buildRecord(BaseRecordDescription baseRecordDescription)
+            throws ServerOperationFailed {
 
         if (log.isTraceEnabled()) {
             log.trace("buildRecord(BaseRecordDescription): Entering. "
@@ -412,7 +483,7 @@ class SummaRecordIterator implements Iterator<Record> {
                     + ") from collection (PID = "
                     + baseConfiguration.getCollectionPID() + ").";
             log.warn("buildRecord(): " + errorMessage, serverOperationFailed);
-            throw new NoSuchElementException(errorMessage);
+            throw serverOperationFailed;
         }
     }
 }

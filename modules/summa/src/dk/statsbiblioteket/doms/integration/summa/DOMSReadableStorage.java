@@ -44,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
 
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 import dk.statsbiblioteket.doms.client.DOMSWSClient;
+import dk.statsbiblioteket.doms.client.ServerOperationFailed;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
@@ -66,7 +67,7 @@ public class DOMSReadableStorage implements Storage {
      * The delimiter inserted between the Summa base name and the DOMS object
      * UUID when creating the IDs for returned records.
      */
-    static final String RECORD_ID_DELIMITER = "§";
+    static final String RECORD_ID_DELIMITER = ":";
 
     /**
      * The client, connected to the DOMS server specified by the configuration,
@@ -168,11 +169,12 @@ public class DOMSReadableStorage implements Storage {
                 }
                 return mostRecentTimeStamp;
             }
-        } catch (Exception exception) {
+        } catch (ServerOperationFailed serverOperationFailed) {
             final String errorMessage = "Failed retrieving the modification time for base: "
                     + summaBaseID;
-            log.warn("getModificationTime(): " + errorMessage, exception);
-            throw new IOException(errorMessage, exception);
+            log.warn("getModificationTime(): " + errorMessage,
+                    serverOperationFailed);
+            throw new IOException(errorMessage, serverOperationFailed);
         }
     }
 
@@ -206,13 +208,14 @@ public class DOMSReadableStorage implements Storage {
                         + iteratorKey);
             }
             return iteratorKey;
-        } catch (Exception exception) {
-            final String errorMessage = "Failed retrieving records from base "
-                    + "(base=" + summaBaseID + ") modified after time-stamp "
-                    + "(timeStamp=" + timeStamp + "), using QueryOptions: "
-                    + options;
-            log.warn("getRecordsModifedAfter(): " + errorMessage, exception);
-            throw new IOException(errorMessage, exception);
+        } catch (RegistryFullException registryFullException) {
+            final String errorMessage = "Failed creating an iterator for "
+                    + "retrieval of records from base " + "(base="
+                    + summaBaseID + ") modified after time-stamp (timeStamp="
+                    + timeStamp + "), using QueryOptions: " + options;
+            log.warn("getRecordsModifedAfter(long, String, QueryOptions): "
+                    + errorMessage, registryFullException);
+            throw new IOException(errorMessage, registryFullException);
         }
     }
 
@@ -264,6 +267,16 @@ public class DOMSReadableStorage implements Storage {
 
             throw new IllegalArgumentException(errorMessage,
                     unknownKeyException);
+        } catch (DOMSCommunicationError domsCommunicationError) {
+
+            // Translate communication/server errors to IOExceptions!
+            final String errorMessage = "next() operation on this iterator "
+                    + "(iterator key = " + iteratorKey + ") failed due to a "
+                    + "server or communication error. Failed retrieving up to "
+                    + maxRecords + " records.";
+
+            log.warn("next(long, int): " + errorMessage);
+            throw new IOException(errorMessage, domsCommunicationError);
         }
     }
 
@@ -312,11 +325,20 @@ public class DOMSReadableStorage implements Storage {
 
             throw new IllegalArgumentException(errorMessage,
                     unknownKeyException);
+        } catch (DOMSCommunicationError domsCommunicationError) {
+
+            // Translate communication/server errors to IOExceptions!
+            final String errorMessage = "next() operation on this iterator "
+                    + "(iterator key = " + iteratorKey + ") failed due to a "
+                    + "server or communication error.";
+
+            log.warn("next(long): " + errorMessage, domsCommunicationError);
+            throw new IOException(errorMessage, domsCommunicationError);
         }
     }
 
     public Record getRecord(String summaRecordID, QueryOptions options)
-            throws IOException {
+            throws IOException, IllegalArgumentException {
 
         log.trace("getRecord(String , QueryOptions): Called with "
                 + "summaRecordID: " + summaRecordID + " QueryOptions: "
@@ -338,7 +360,19 @@ public class DOMSReadableStorage implements Storage {
             final String entryObjectPID = summaRecordID
                     .substring(baseDelimiterPosition + 1);
 
-            final String viewID = baseConfigurations.get(base).getViewID();
+            final BaseDOMSConfiguration baseConfiguration = baseConfigurations
+                    .get(base);
+
+            if (baseConfiguration == null) {
+
+                final String errorMessage = "Unknown Summa base ID: " + base
+                        + " in the ID of the requested record: "
+                        + summaRecordID;
+                log.warn("getRecord(String): " + errorMessage);
+
+                throw new IllegalArgumentException(errorMessage);
+            }
+            final String viewID = baseConfiguration.getViewID();
             final String viewBundle = domsClient.getViewBundle(entryObjectPID,
                     viewID);
 
@@ -352,18 +386,18 @@ public class DOMSReadableStorage implements Storage {
 
             return resultRecord;
 
-        } catch (Exception exception) {
+        } catch (ServerOperationFailed serverOperationFailed) {
             final String errorMessage = "Failed retrieving record (record id = '"
                     + summaRecordID + "', using the query options: " + options;
 
-            log.warn("getRecord(String , QueryOptions): " + errorMessage);
-
-            throw new IOException(errorMessage);
+            log.warn("getRecord(String , QueryOptions): " + errorMessage,
+                    serverOperationFailed);
+            throw new IOException(errorMessage, serverOperationFailed);
         }
     }
 
     public List<Record> getRecords(List<String> summaRecordIDs,
-            QueryOptions options) throws IOException {
+            QueryOptions options) throws IOException, IllegalArgumentException {
 
         if (log.isTraceEnabled()) {
             log.trace("getRecords(List<String>, QueryOptions): called with "
@@ -554,11 +588,10 @@ public class DOMSReadableStorage implements Storage {
             }
 
             if (log.isTraceEnabled()) {
-                log
-                        .trace("initBaseConfigurations(Configuration, Map<String, "
-                                + "BaseDOMSConfiguration>): Successfully added "
-                                + baseConfigurations.size()
-                                + " base configurations to the internal map. Returning.");
+                log.trace("initBaseConfigurations(Configuration, Map<String, "
+                        + "BaseDOMSConfiguration>): " + "Successfully added "
+                        + baseConfigurations.size() + " base configurations to"
+                        + " the internal map. Returning.");
             }
 
         } catch (Exception exception) {
