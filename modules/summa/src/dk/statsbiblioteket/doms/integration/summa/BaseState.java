@@ -28,10 +28,11 @@ package dk.statsbiblioteket.doms.integration.summa;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
- * 
  */
 class BaseState {
+
     private long nextRecordDescriptionIndex;
+
     private long currentRecordDescriptionCount;
 
     BaseState() {
