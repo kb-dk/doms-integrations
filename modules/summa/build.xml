@@ -29,6 +29,7 @@
 
     <property name="global.dir" value="${basedir}/../.."/>
 
+     <property name="jarfile" value="${ant.project.name}-${version}.jar"/>
     <!--Contain the normal build tasks, including war-->
     <import file="${global.dir}/build/build-module.xml"/>
 
@@ -36,10 +37,10 @@
     <dirset id="project.libs" dir="${global.dir}/lib/">
         <include name="${domsclient.lib}"/>
     	<include name="${centralWebserviceInterface.lib}"/>
+        <include name="${sbutil.lib}"/>
     </dirset>
 
     <dirset id="build.project.libs" dir="${global.dir}/lib/">
-        <include name="${sbutil.lib}"/>
         <include name="${commons-logging.lib}"/>
         <include name="${summa-common.lib}"/>
         <include name="${summa-storage.lib}"/>
