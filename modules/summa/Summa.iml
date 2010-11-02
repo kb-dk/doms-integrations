@@ -14,6 +14,15 @@
     <orderEntry type="library" name="commons-logging" level="project" />
     <orderEntry type="library" name="summa" level="project" />
     <orderEntry type="library" name="domsclient" level="project" />
+    <orderEntry type="module-library">
+      <library>
+        <CLASSES>
+          <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.5.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
   </component>
 </module>
 
