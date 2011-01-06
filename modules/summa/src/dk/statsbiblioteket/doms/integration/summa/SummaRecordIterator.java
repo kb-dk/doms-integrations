@@ -26,23 +26,15 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
 import dk.statsbiblioteket.doms.client.DOMSWSClient;
 import dk.statsbiblioteket.doms.client.ServerOperationFailed;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.util.*;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
@@ -468,6 +460,8 @@ class SummaRecordIterator implements Iterator<Record> {
 
             final Record newRecord = new Record(recordID, summaBaseID,
                     recordData);
+            newRecord.setModificationTime(baseRecordDescription.getRecordDescription().getDate());
+            newRecord.setCreationTime(baseRecordDescription.getRecordDescription().getDate());
 
             if (log.isTraceEnabled()) {
                 log.trace("buildRecord(BaseRecordDescription): Returning a "
