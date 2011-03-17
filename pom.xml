@@ -8,13 +8,13 @@
 
     <groupId>dk.statsbiblioteket.doms.summa</groupId>
     <artifactId>summa</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.6-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <scm>
-        <connection>scm:svn:https://doms.svn.sourceforge.net/svnroot/doms/exampples/integration/tags/summa-0.0.6</connection>
-        <developerConnection>scm:svn:https://doms.svn.sourceforge.net/svnroot/doms/examples/integration/tags/summa-0.0.6</developerConnection>
-        <url>http://doms.svn.sourceforge.net/viewvc/doms/examples/integration/tags/summa-0.0.6</url>
+        <connection>scm:svn:https://doms.svn.sourceforge.net/svnroot/doms/exampples/integration/trunk</connection>
+        <developerConnection>scm:svn:https://doms.svn.sourceforge.net/svnroot/doms/examples/integration/trunk</developerConnection>
+        <url>http://doms.svn.sourceforge.net/viewvc/doms/examples/integration/trunk</url>
     </scm>
 
 
