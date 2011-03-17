@@ -5,20 +5,40 @@
     <parent>
         <groupId>dk.statsbiblioteket.doms.summa</groupId>
         <artifactId>summa</artifactId>
-        <version>0.0.6</version>
+        <version>0.0.7</version>
     </parent>
 
     <groupId>dk.statsbiblioteket.doms.summa</groupId>
     <artifactId>summaStorage</artifactId>
-    <version>0.0.6</version>
+    <version>0.0.7</version>
 
+    <build>
+        <plugins>
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <!-- this is used for inheritance merges -->
+                        <phase>package</phase>
+                        <!-- append to the packaging phase. -->
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
 
+            </plugin>
+
+        </plugins>
+    </build>
     <dependencies>
-        <dependency>
-            <groupId>dk.statsbiblioteket.doms.domsutil</groupId>
-            <artifactId>domsutil-bundle</artifactId>
-            <type>pom</type>
-        </dependency>
         <dependency>
             <groupId>dk.statsbiblioteket.doms.client</groupId>
             <artifactId>domsclient</artifactId>
@@ -35,5 +55,5 @@
         </dependency>
 
     </dependencies>
-    
+
 </project>

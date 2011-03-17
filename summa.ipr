@@ -338,50 +338,6 @@
         <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/client/domsclient/0.0.8/domsclient-0.0.8-sources.jar!/" />
       </SOURCES>
     </library>
-    <library name="Maven: dk.statsbiblioteket.doms.domsutil.surveyable:domsutil-logappender:0.0.20">
-      <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-logappender/0.0.20/domsutil-logappender-0.0.20.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-logappender/0.0.20/domsutil-logappender-0.0.20-javadoc.jar!/" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-logappender/0.0.20/domsutil-logappender-0.0.20-sources.jar!/" />
-      </SOURCES>
-    </library>
-    <library name="Maven: dk.statsbiblioteket.doms.domsutil.surveyable:domsutil-surveyable-impl:0.0.20">
-      <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-surveyable-impl/0.0.20/domsutil-surveyable-impl-0.0.20.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-surveyable-impl/0.0.20/domsutil-surveyable-impl-0.0.20-javadoc.jar!/" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-surveyable-impl/0.0.20/domsutil-surveyable-impl-0.0.20-sources.jar!/" />
-      </SOURCES>
-    </library>
-    <library name="Maven: dk.statsbiblioteket.doms.domsutil.surveyable:domsutil-surveyable-interface:0.0.20">
-      <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-surveyable-interface/0.0.20/domsutil-surveyable-interface-0.0.20.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-surveyable-interface/0.0.20/domsutil-surveyable-interface-0.0.20-javadoc.jar!/" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/surveyable/domsutil-surveyable-interface/0.0.20/domsutil-surveyable-interface-0.0.20-sources.jar!/" />
-      </SOURCES>
-    </library>
-    <library name="Maven: dk.statsbiblioteket.doms.domsutil:domsutil-webservice-common:0.0.20">
-      <CLASSES>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/domsutil-webservice-common/0.0.20/domsutil-webservice-common-0.0.20.jar!/" />
-      </CLASSES>
-      <JAVADOC>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/domsutil-webservice-common/0.0.20/domsutil-webservice-common-0.0.20-javadoc.jar!/" />
-      </JAVADOC>
-      <SOURCES>
-        <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/doms/domsutil/domsutil-webservice-common/0.0.20/domsutil-webservice-common-0.0.20-sources.jar!/" />
-      </SOURCES>
-    </library>
     <library name="Maven: dk.statsbiblioteket.lucene:lucene-core:3.1-dev-LUCENE-2335">
       <CLASSES>
         <root url="jar://$MAVEN_REPOSITORY$/dk/statsbiblioteket/lucene/lucene-core/3.1-dev-LUCENE-2335/lucene-core-3.1-dev-LUCENE-2335.jar!/" />
