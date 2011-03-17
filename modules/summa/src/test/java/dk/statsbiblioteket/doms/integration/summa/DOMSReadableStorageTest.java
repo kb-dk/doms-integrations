@@ -10,6 +10,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,6 +24,8 @@ import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 
 /**
+ *
+ * This test requires a running doms system to connect to, at the location specified in the config file
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class DOMSReadableStorageTest {
@@ -30,7 +33,7 @@ public class DOMSReadableStorageTest {
     /**
      * Path to the configuration file used by the tests in this test class.
      */
-    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "modules/summa/config/radioTVTestConfiguration.xml";
+    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "src/test/resources/radioTVTestConfiguration.xml";
 
     /**
      * The current <code>DOMSReadableStorage</code> instance under test.
@@ -45,6 +48,7 @@ public class DOMSReadableStorageTest {
     private final Configuration testConfiguration;
 
     public DOMSReadableStorageTest() {
+        //System.out.println(new File(".").getAbsolutePath());
         testConfiguration = Configuration
                 .load(TEST_CONFIGURATION_XML_FILE_PATH);
     }

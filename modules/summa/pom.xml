@@ -14,5 +14,28 @@
     <artifactId>summaStorage</artifactId>
     <version>0.0.6-SNAPSHOT</version>
 
+
+    <dependencies>
+        <dependency>
+            <groupId>dk.statsbiblioteket.doms.domsutil</groupId>
+            <artifactId>domsutil-bundle</artifactId>
+            <type>pom</type>
+        </dependency>
+        <dependency>
+            <groupId>dk.statsbiblioteket.doms.client</groupId>
+            <artifactId>domsclient</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>dk.statsbiblioteket.summa</groupId>
+            <artifactId>summa-storage</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
     
 </project>

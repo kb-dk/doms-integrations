@@ -39,11 +39,14 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import dk.statsbiblioteket.doms.client.DomsWSClient;
+import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
+import org.apache.commons.lang.NotImplementedException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-import dk.statsbiblioteket.doms.client.DOMSWSClient;
+
+
 import dk.statsbiblioteket.doms.client.ServerOperationFailed;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
@@ -73,7 +76,7 @@ public class DOMSReadableStorage implements Storage {
      * The client, connected to the DOMS server specified by the configuration,
      * to retrieve objects from.
      */
-    private final DOMSWSClient domsClient;
+    private final DomsWSClient domsClient;
 
     /**
      * <code>Map</code> containing all the configurations for the Summa base
@@ -475,7 +478,7 @@ public class DOMSReadableStorage implements Storage {
      *             if the configuration contains any illegal values or
      *             structures.
      */
-    private DOMSWSClient domsLogin(Configuration configuration)
+    private DomsWSClient domsLogin(Configuration configuration)
             throws ConfigurationException {
 
         if (log.isTraceEnabled()) {
@@ -502,9 +505,9 @@ public class DOMSReadableStorage implements Storage {
         final String domsWSEndpointURL = configuration
                 .getString(ConfigurationKeys.DOMS_API_WEBSERVICE_URL);
         try {
-            final DOMSWSClient newDomsClient = new DOMSWSClient();
+            final DomsWSClient newDomsClient = new DomsWSClientImpl();
             final URL domsWSAPIEndpoint = new URL(domsWSEndpointURL);
-            newDomsClient.login(domsWSAPIEndpoint, userName, password);
+            newDomsClient.setCredentials(domsWSAPIEndpoint, userName, password);
 
             if (log.isDebugEnabled()) {
                 log.debug("domsLogin(Configuration): returning a DOMSWSClient "

@@ -35,11 +35,12 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 
+import dk.statsbiblioteket.doms.central.RecordDescription;
+import dk.statsbiblioteket.doms.client.DomsWSClient;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
-import dk.statsbiblioteket.doms.client.DOMSWSClient;
+
 import dk.statsbiblioteket.doms.client.ServerOperationFailed;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
@@ -56,7 +57,7 @@ class SummaRecordIterator implements Iterator<Record> {
     /**
      * The client, connected to the DOMS server to retrieve objects from.
      */
-    private final DOMSWSClient domsClient;
+    private final DomsWSClient domsClient;
 
     private final Map<String, BaseDOMSConfiguration> baseConfigurations;
     private final long startTimeStamp;
@@ -69,7 +70,7 @@ class SummaRecordIterator implements Iterator<Record> {
     private final TreeSet<BaseRecordDescription> baseRecordDescriptions;
     private final Map<String, BaseState> baseStates;
 
-    SummaRecordIterator(DOMSWSClient domsClient,
+    SummaRecordIterator(DomsWSClient domsClient,
             Map<String, BaseDOMSConfiguration> baseConfigurations,
             Set<String> summaBaseIDs, long timeStamp, QueryOptions options) {
 
