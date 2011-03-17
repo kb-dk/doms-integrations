@@ -26,7 +26,8 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
-import dk.statsbiblioteket.doms.centralWebservice.RecordDescription;
+
+import dk.statsbiblioteket.doms.central.RecordDescription;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;

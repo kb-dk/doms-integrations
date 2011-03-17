@@ -120,7 +120,7 @@ This is not strictly necessary, but provides some optimization -->
         </entry>
         <entry>
             <key>DOMSWebserviceURL</key>
-            <value class="string">http://alhena:7980/centralDomsWebservice/central/?wsdl
+            <value class="string">http://alhena:7880/centralWebservice-service/central/?wsdl
             </value>
         </entry>
 
