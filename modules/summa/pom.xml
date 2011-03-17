@@ -5,12 +5,12 @@
     <parent>
         <groupId>dk.statsbiblioteket.doms.summa</groupId>
         <artifactId>summa</artifactId>
-        <version>0.0.7-SNAPSHOT</version>
+        <version>0.0.7</version>
     </parent>
 
     <groupId>dk.statsbiblioteket.doms.summa</groupId>
     <artifactId>summaStorage</artifactId>
-    <version>0.0.7-SNAPSHOT</version>
+    <version>0.0.7</version>
 
     <build>
         <plugins>
