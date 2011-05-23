@@ -26,32 +26,22 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URI;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
-
 import dk.statsbiblioteket.doms.client.DomsWSClient;
 import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
-
-
 import dk.statsbiblioteket.doms.client.ServerOperationFailed;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.Storage;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
+import java.util.*;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
@@ -111,6 +101,13 @@ public class DOMSReadableStorage implements Storage {
 
         initBaseConfigurations(configuration, baseConfigurations);
         domsClient = domsLogin(configuration);
+    }
+
+    DOMSReadableStorage(){
+        baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
+        recordIterators = new SelfCleaningObjectRegistry<Iterator<Record>>(
+                THREE_HOURS);
+        domsClient = null;
     }
 
     /**
@@ -478,7 +475,7 @@ public class DOMSReadableStorage implements Storage {
      *             if the configuration contains any illegal values or
      *             structures.
      */
-    private DomsWSClient domsLogin(Configuration configuration)
+    protected DomsWSClient domsLogin(Configuration configuration)
             throws ConfigurationException {
 
         if (log.isTraceEnabled()) {

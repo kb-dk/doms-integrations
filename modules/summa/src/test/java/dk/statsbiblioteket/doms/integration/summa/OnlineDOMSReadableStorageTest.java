@@ -19,17 +19,15 @@ import java.util.NoSuchElementException;
 import static org.junit.Assert.*;
 
 /**
- *
- * This test requires a running doms system to connect to, at the location specified in the config file
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 @Ignore
-public class DOMSReadableStorageTest {
+public class OnlineDOMSReadableStorageTest {
 
     /**
      * Path to the configuration file used by the tests in this test class.
      */
-    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "src/test/resources/radioTVTestConfiguration.xml";
+    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "modules/summa/config/radioTVTestConfiguration.xml";
 
     /**
      * The current <code>DOMSReadableStorage</code> instance under test.
@@ -43,8 +41,7 @@ public class DOMSReadableStorageTest {
      */
     private final Configuration testConfiguration;
 
-    public DOMSReadableStorageTest() {
-        //System.out.println(new File(".").getAbsolutePath());
+    public OnlineDOMSReadableStorageTest() {
         testConfiguration = Configuration
                 .load(TEST_CONFIGURATION_XML_FILE_PATH);
     }
@@ -70,6 +67,7 @@ public class DOMSReadableStorageTest {
      * <code>getModificationTime(base)</code> returns a value larger than zero.
      */
     @Test
+    @Ignore
     public void testGetModificationTime() {
         try {
 
