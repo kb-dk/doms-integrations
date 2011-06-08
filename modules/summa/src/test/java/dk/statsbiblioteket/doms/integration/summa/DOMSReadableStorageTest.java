@@ -3,6 +3,7 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
+import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
@@ -58,7 +59,7 @@ public class DOMSReadableStorageTest {
      */
     @Before
     public void setUp() throws Exception {
-        storage = new DOMSReadableStorage(testConfiguration);
+        storage = new DOMSReadableStorage(testConfiguration, new DomsWSClientImpl());
     }
 
     /**

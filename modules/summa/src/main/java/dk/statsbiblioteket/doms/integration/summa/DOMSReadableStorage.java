@@ -85,6 +85,35 @@ public class DOMSReadableStorage implements Storage {
      * Create a <code>DOMSReadableStorage</code> instance based on the
      * configuration provided by <code>configuration</code>.
      * 
+     *
+     * @param configuration
+     *            Configuration containing information for mapping Summa base
+     *            names to DOMS collections and views.
+     * @param domsWSClient The doms client to use.
+     * @throws ConfigurationException
+     *             if the configuration contains any errors regarding option
+     *             values or document structure.
+     */
+    public DOMSReadableStorage(Configuration configuration, DomsWSClient domsWSClient)
+            throws ConfigurationException {
+
+        baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
+        recordIterators = new SelfCleaningObjectRegistry<Iterator<Record>>(
+                THREE_HOURS);
+
+        initBaseConfigurations(configuration, baseConfigurations);
+        domsClient = domsWSClient;
+        setDomsClientCredentials(configuration);
+    }
+
+    /**
+     * Create a <code>DOMSReadableStorage</code> instance based on the
+     * configuration provided by <code>configuration</code>.
+     *
+     * Overloaded constructor to support Summa requirement to constructor.
+     * Same as calling {@link #DOMSReadableStorage(dk.statsbiblioteket.summa.common.configuration.Configuration, dk.statsbiblioteket.doms.client.DomsWSClient)}
+     * except DomsWSClient is hardcoded to {@link DomsWSClientImpl}.
+     *
      * @param configuration
      *            Configuration containing information for mapping Summa base
      *            names to DOMS collections and views.
@@ -94,20 +123,7 @@ public class DOMSReadableStorage implements Storage {
      */
     public DOMSReadableStorage(Configuration configuration)
             throws ConfigurationException {
-
-        baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
-        recordIterators = new SelfCleaningObjectRegistry<Iterator<Record>>(
-                THREE_HOURS);
-
-        initBaseConfigurations(configuration, baseConfigurations);
-        domsClient = domsLogin(configuration);
-    }
-
-    DOMSReadableStorage(){
-        baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
-        recordIterators = new SelfCleaningObjectRegistry<Iterator<Record>>(
-                THREE_HOURS);
-        domsClient = null;
+        this(configuration, new DomsWSClientImpl());
     }
 
     /**
@@ -468,6 +484,8 @@ public class DOMSReadableStorage implements Storage {
      * username, password and web service end-point also specified by
      * <code>configuration</code>.
      * 
+     *
+     *
      * @param configuration
      *            a <code>DOMSReadableStorage</code> configuration object.
      * @return a reference to the <code>DOMSReadableStorage</code> instance.
@@ -475,11 +493,11 @@ public class DOMSReadableStorage implements Storage {
      *             if the configuration contains any illegal values or
      *             structures.
      */
-    protected DomsWSClient domsLogin(Configuration configuration)
+    protected void setDomsClientCredentials(Configuration configuration)
             throws ConfigurationException {
 
         if (log.isTraceEnabled()) {
-            log.trace("domsLogin(Configuration): Called with configuration: "
+            log.trace("setDomsClientCredentials(Configuration): Called with configuration: "
                     + configuration);
         }
 
@@ -494,7 +512,7 @@ public class DOMSReadableStorage implements Storage {
             final String errorMessage = "Invalid DOMS user credentials in the"
                     + " configuration. username = '" + userName
                     + "'  password = '" + password + "'";
-            log.warn("domsLogin(Configuration): " + errorMessage);
+            log.warn("setDomsClientCredentials(Configuration): " + errorMessage);
 
             throw new ConfigurationException(errorMessage);
         }
@@ -502,24 +520,22 @@ public class DOMSReadableStorage implements Storage {
         final String domsWSEndpointURL = configuration
                 .getString(ConfigurationKeys.DOMS_API_WEBSERVICE_URL);
         try {
-            final DomsWSClient newDomsClient = new DomsWSClientImpl();
             final URL domsWSAPIEndpoint = new URL(domsWSEndpointURL);
-            newDomsClient.setCredentials(domsWSAPIEndpoint, userName, password);
+            domsClient.setCredentials(domsWSAPIEndpoint, userName, password);
 
             if (log.isDebugEnabled()) {
-                log.debug("domsLogin(Configuration): returning a DOMSWSClient "
+                log.debug("setDomsClientCredentials(Configuration): returning a DOMSWSClient "
                         + "instance logged in with user = '" + userName
                         + " and password = '" + password + "' on "
                         + domsWSEndpointURL);
             }
-            return newDomsClient;
         } catch (MalformedURLException malformedURLException) {
 
             final String errorMessage = "Failed connecting to the DOMS API "
                     + "webservice with the URL" + " (" + domsWSEndpointURL
                     + ") specified in the configuration.";
 
-            log.warn("domsLogin(Configuration): " + errorMessage);
+            log.warn("setDomsClientCredentials(Configuration): " + errorMessage);
             throw new ConfigurationException(errorMessage,
                     malformedURLException);
         }

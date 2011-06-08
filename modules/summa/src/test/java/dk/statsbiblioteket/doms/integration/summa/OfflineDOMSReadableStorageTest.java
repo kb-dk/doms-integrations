@@ -1,17 +1,14 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 
-import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import org.apache.commons.lang.NotImplementedException;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,19 +25,18 @@ import static org.junit.Assert.*;
 public class OfflineDOMSReadableStorageTest {
 
     public OfflineDOMSReadableStorageTest(){
-        System.out.println(new File(TEST_CONFIGURATION_XML_FILE_PATH).getAbsolutePath());
-        testConfiguration = Configuration
-                .load(TEST_CONFIGURATION_XML_FILE_PATH);
+//        System.out.println(new File(TEST_CONFIGURATION_XML_FILE_PATH).getAbsolutePath());
+        testConfiguration = Configuration.load(TEST_CONFIGURATION_XML_FILE_PATH);
     }
     /**
      * Path to the configuration file used by the tests in this test class.
      */
     private static final String TEST_CONFIGURATION_XML_FILE_PATH =
-            "src/test/resources/radioTVTestConfiguration.xml";
+            "/home/eab/DOMS/examples/integration/trunk/modules/summa/src/test/resources/radioTVTestConfiguration.xml";
     /**
      * The current <code>DOMSReadableStorage</code> instance under test.
      */
-    private OfflineDOMSReadableStorage storage;
+    private DOMSReadableStorage storage;
 
     /**
      * The test configuration loaded by the constructor, from which the
@@ -51,7 +47,8 @@ public class OfflineDOMSReadableStorageTest {
 
     @Before
     public void setUp(){
-        storage = new OfflineDOMSReadableStorage(testConfiguration);
+        final Configuration configuration = testConfiguration;
+        storage = new DOMSReadableStorage(configuration, new OfflineDOMSWSClient());
 
     }
 
@@ -90,21 +87,76 @@ public class OfflineDOMSReadableStorageTest {
 
 
     @Test
-    @Ignore // Ignored due to unavoidable network calls
     public void testGetModificationTime(){
         try {
             final String baseID = getFirstBaseID(testConfiguration);
 
-        //storage.domsClient.modificationTime = 1;
             assertFalse(
                     "The latest modification time of the collection (base='"
                             + baseID + "') was implausible old.", storage
-                            .getModificationTime(baseID) <= 0);
+                            .getModificationTime(baseID) < 0);
 
         } catch (Exception ex){
             System.out.print(ex);
         }
+    }
 
+    @Test
+    public void testGetModificationTimeIDNull(){
+        String baseID = null;
+        try {
+        assertTrue("The latest modification time of the collection (base='"
+                            + baseID + "') was implausible old.", storage
+                            .getModificationTime(baseID) == 0);
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+    }
+
+    @Test
+    public void testGetRecordsModifiedAfterNoBaseIDNoOptions(){
+        long timeStamp = 0l;
+        String summaBaseID = null;
+        QueryOptions options = null;
+        try {
+            assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
+                    options) >= 0);
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+    }
+
+    @Test
+    public void  testGetRecordModifiedAfterNoOptions(){
+        long timeStamp = 0l;
+        String summaBaseID = "doms_RadioTVCollection";
+        QueryOptions options = null;
+        try {
+            assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
+                    options) >= 0);
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+    }
+
+
+    @Test
+    public void testNextIsNull() throws IOException {
+        long timeStamp = 0l;
+        String summaBaseID = "doms_radioTVCollection";
+        QueryOptions options = null;
+        long iterKey = iterKey = storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
+               options);
+        assertNotNull(storage.next(iterKey));
+    }
+
+    //@Test
+    public void testNextGivesEmptyList() throws IOException {
+        long timeStamp = 0l;
+        String summaBaseID = "doms_radioTVCollection";
+        QueryOptions options = null;
+        long iterKey = 0l;
+        assertNull(storage.next(iterKey, 1).get(0));
     }
 
     @Test(expected = NotImplementedException.class)
@@ -135,7 +187,8 @@ public class OfflineDOMSReadableStorageTest {
     public void testFlushAllWithOptions() throws IOException {
         storage.flushAll(new ArrayList<Record>(), new QueryOptions(false, false, 0, 0));
         fail("Someone implemented the method, please update tests");
-    }
+    }                                      //@Test
+
 
     @Test(expected = NotImplementedException.class)
     public void testFlushWithOptions() throws IOException {
@@ -176,49 +229,3 @@ public class OfflineDOMSReadableStorageTest {
 
 }
 
-class OfflineDOMSReadableStorage extends DOMSReadableStorage{
-
-    /**
-     * Create a <code>DOMSReadableStorage</code> instance based on the
-     * configuration provided by <code>configuration</code>.
-     *
-     * @param configuration Configuration containing information for mapping Summa base
-     *                      names to DOMS collections and views.
-     * @throws dk.statsbiblioteket.summa.common.configuration.Configurable.ConfigurationException
-     *          if the configuration contains any errors regarding option
-     *          values or document structure.
-     */
-    public OfflineDOMSReadableStorage(Configuration configuration) throws ConfigurationException {
-        super(configuration);
-    }
-
-
-    @Override
-    protected DomsWSClientImpl domsLogin(Configuration config){
-        return new OfflineDOMSWSClient();
-    }
-
-
-
-
-
-}
-
-class OfflineDOMSWSClient extends DomsWSClientImpl{
-
-    public long modificationTime;
-    public OfflineDOMSWSClient(){
-        modificationTime = 0;
-    }
-
-    @Override
-    public long getModificationTime(String collectionPID, String viewID,
-                                    String state){
-        return modificationTime;
-    }
-
-//    @Override
-    public String getViewBundle(String entryObjectPID, String viewID){
-        return viewID+":"+entryObjectPID;
-    }
-}
