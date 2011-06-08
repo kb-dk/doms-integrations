@@ -3,6 +3,7 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
+import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
@@ -27,7 +28,7 @@ public class OnlineDOMSReadableStorageTest {
     /**
      * Path to the configuration file used by the tests in this test class.
      */
-    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "modules/summa/config/radioTVTestConfiguration.xml";
+    private static final String TEST_CONFIGURATION_XML_FILE_PATH = "modules/summa/src/test/resources/radioTVTestConfiguration.xml";
 
     /**
      * The current <code>DOMSReadableStorage</code> instance under test.
@@ -55,7 +56,7 @@ public class OnlineDOMSReadableStorageTest {
      */
     @Before
     public void setUp() throws Exception {
-        storage = new DOMSReadableStorage(testConfiguration);
+        storage = new DOMSReadableStorage(testConfiguration, new DomsWSClientImpl());
     }
 
     /**
