@@ -24,8 +24,10 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package dk.statsbiblioteket.doms.integration.summa;
+package dk.statsbiblioteket.doms.integration.summa.registry;
 
+import dk.statsbiblioteket.doms.integration.summa.exceptions.RegistryFullException;
+import dk.statsbiblioteket.doms.integration.summa.exceptions.UnknownKeyException;
 import dk.statsbiblioteket.util.caching.TimeSensitiveCache;
 
 /**

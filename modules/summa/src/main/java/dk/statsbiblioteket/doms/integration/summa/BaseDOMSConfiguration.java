@@ -49,18 +49,29 @@ public class BaseDOMSConfiguration {
      */
     private final String viewID;
 
+
+    /**
+     * The state of the objects returned
+     */
+    private final String objectState;
+
+    public String getObjectState() {
+        return objectState;
+    }
+
     /**
      * Create a new <code>BaseDOMSConfiguration</code> instance which points out
      * a view of a specific collection, stored in the DOMS.
-     * 
+     *
      * @param collectionPID
      *            PID of the collection i question.
      * @param viewID
-     *            ID of a view of the content model entry object.
+     * @param objectState
      */
-    public BaseDOMSConfiguration(URI collectionPID, String viewID) {
+    public BaseDOMSConfiguration(URI collectionPID, String viewID, String objectState) {
         this.collectionPID = collectionPID;
         this.viewID = viewID;
+        this.objectState = objectState;
     }
 
     /**

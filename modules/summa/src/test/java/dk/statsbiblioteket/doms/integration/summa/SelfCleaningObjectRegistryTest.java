@@ -1,10 +1,16 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
+import dk.statsbiblioteket.doms.integration.summa.exceptions.RegistryFullException;
+import dk.statsbiblioteket.doms.integration.summa.exceptions.UnknownKeyException;
+import dk.statsbiblioteket.doms.integration.summa.registry.SelfCleaningObjectRegistry;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import org.junit.Before;
 import org.junit.Test;
 
+
+import java.io.File;
+import java.net.URISyntaxException;
 import java.util.Iterator;
 
 import static org.junit.Assert.assertTrue;
@@ -18,11 +24,6 @@ import static org.junit.Assert.fail;
  * To change this template use File | Settings | File Templates.
  */
 public class SelfCleaningObjectRegistryTest {
-    /**
-     * Path to the configuration file used by the tests in this test class.
-     */
-    private static final String TEST_CONFIGURATION_XML_FILE_PATH =
-            "/home/eab/DOMS/examples/integration/trunk/modules/summa/src/test/resources/radioTVTestConfiguration.xml";
     /**
      * The current <code>DOMSReadableStorage</code> instance under test.
      */
@@ -42,9 +43,8 @@ public class SelfCleaningObjectRegistryTest {
     private static final long THREE_MINUTES = 180000;
 
 
-    public SelfCleaningObjectRegistryTest(){
-//        System.out.println(new File(TEST_CONFIGURATION_XML_FILE_PATH).getAbsolutePath());
-        testConfiguration = Configuration.load(TEST_CONFIGURATION_XML_FILE_PATH);
+    public SelfCleaningObjectRegistryTest() throws URISyntaxException {
+        testConfiguration = Configuration.load(new File(Thread.currentThread().getContextClassLoader().getResource("radioTVTestConfiguration.xml").toURI()).getAbsolutePath());
     }
 
     @Before
@@ -80,7 +80,7 @@ public class SelfCleaningObjectRegistryTest {
     }
 
     @Test(expected = UnknownKeyException.class)
-    public void testRemoveFails() throws UnknownKeyException{
+    public void testRemoveFails() throws UnknownKeyException {
         recordIterators.remove(-1l);
         fail("expected exception not thrown: 'UnknownKeyException'");
     }

@@ -29,6 +29,7 @@ package dk.statsbiblioteket.doms.integration.summa;
 import dk.statsbiblioteket.doms.central.RecordDescription;
 import dk.statsbiblioteket.doms.client.DomsWSClient;
 import dk.statsbiblioteket.doms.client.ServerOperationFailed;
+import dk.statsbiblioteket.doms.integration.summa.exceptions.DOMSCommunicationError;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import org.apache.commons.logging.Log;
@@ -302,8 +303,8 @@ import java.util.*;
         final String collectionPIDString = baseConfiguration.getCollectionPID()
                 .toString();
         String viewID = baseConfiguration.getViewID();
-        final String objectState = "Published";// FIXME! Hard-coded object
-        // state!
+
+        final String objectState = baseConfiguration.getObjectState();
 
         List<RecordDescription> retrievedRecordDescriptions = null;
         final BaseState summaBaseState = baseStates.get(summaBaseID);
