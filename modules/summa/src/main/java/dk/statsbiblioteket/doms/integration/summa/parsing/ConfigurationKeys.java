@@ -74,5 +74,5 @@ public class ConfigurationKeys {
      * Key for the DOMS web service end-point element in the root configuration.
      */
     public static final String DOMS_API_WEBSERVICE_URL = "DOMSWebserviceURL";
-    public static final String OBJECT_STATE = "Published";
+    public static final String OBJECT_STATE = "State";
 }
