@@ -144,7 +144,7 @@ This is not strictly necessary, but provides some optimization -->
                     </entry>
                     <entry>
                         <key>State</key>
-                        <value class="string">Published</value>
+                        <value class="string">NotDeleted</value>
                     </entry>
                 </xproperties>
             </value>
