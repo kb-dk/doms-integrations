@@ -28,7 +28,7 @@ package dk.statsbiblioteket.doms.integration.summa;
 
 import dk.statsbiblioteket.doms.client.DomsWSClient;
 import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
-import dk.statsbiblioteket.doms.client.ServerOperationFailed;
+import dk.statsbiblioteket.doms.client.exceptions.ServerOperationFailed;
 import dk.statsbiblioteket.doms.integration.summa.exceptions.DOMSCommunicationError;
 import dk.statsbiblioteket.doms.integration.summa.exceptions.RegistryFullException;
 import dk.statsbiblioteket.doms.integration.summa.exceptions.UnknownKeyException;
