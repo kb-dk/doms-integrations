@@ -9,6 +9,7 @@ import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.ByteArrayOutputStream;
@@ -193,6 +194,7 @@ public class DOMSReadableStorageTest {
      * contain some objects in order to make this test run successfully.
      */
     @Test
+    @Ignore
     public void testNextLongInt() {
 
         try {
@@ -254,6 +256,7 @@ public class DOMSReadableStorageTest {
      * contain some objects in order to make this test run successfully.
      */
     @Test
+    @Ignore
     public void testNextLong() {
         try {
             // Get an iterator over all modified records.

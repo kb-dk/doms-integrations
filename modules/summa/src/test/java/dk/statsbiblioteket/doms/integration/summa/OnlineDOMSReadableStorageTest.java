@@ -253,6 +253,7 @@ public class OnlineDOMSReadableStorageTest {
      * contain some objects in order to make this test run successfully.
      */
     @Test
+        @Ignore
     public void testNextLong() {
         try {
             // Get an iterator over all modified records.

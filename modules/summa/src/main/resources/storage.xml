@@ -142,6 +142,10 @@ This is not strictly necessary, but provides some optimization -->
                         <key>viewID</key>
                         <value class="string">SummaVisible</value>
                     </entry>
+                    <entry>
+                        <key>State</key>
+                        <value class="string">Published</value>
+                    </entry>
                 </xproperties>
             </value>
         </entry>

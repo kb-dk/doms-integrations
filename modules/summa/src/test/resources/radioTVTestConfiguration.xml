@@ -32,6 +32,11 @@
                         <key>viewID</key>
                         <value class="string">SummaVisible</value>
                     </entry>
+                    <entry>
+                        <key>State</key>
+                        <value class="string">Published</value>
+                    </entry>
+
                 </xproperties>
 
                 <!-- Example entry:
