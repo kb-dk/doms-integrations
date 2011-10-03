@@ -24,7 +24,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package dk.statsbiblioteket.doms.integration.summa;
+package dk.statsbiblioteket.doms.integration.summa.parsing;
 
 /**
  * This class defines a set of constants referring to elements which must be
@@ -74,4 +74,5 @@ public class ConfigurationKeys {
      * Key for the DOMS web service end-point element in the root configuration.
      */
     public static final String DOMS_API_WEBSERVICE_URL = "DOMSWebserviceURL";
+    public static final String OBJECT_STATE = "Published";
 }

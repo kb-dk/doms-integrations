@@ -24,7 +24,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package dk.statsbiblioteket.doms.integration.summa;
+package dk.statsbiblioteket.doms.integration.summa.exceptions;
 
 /**
  * Execption thrown to indicate that a key used for a request is unknow by the

@@ -1,6 +1,7 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 
+import dk.statsbiblioteket.doms.integration.summa.parsing.ConfigurationKeys;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
@@ -9,7 +10,9 @@ import org.apache.commons.lang.NotImplementedException;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,15 +27,7 @@ import static org.junit.Assert.*;
  */
 public class OfflineDOMSReadableStorageTest {
 
-    public OfflineDOMSReadableStorageTest(){
-//        System.out.println(new File(TEST_CONFIGURATION_XML_FILE_PATH).getAbsolutePath());
-        testConfiguration = Configuration.load(TEST_CONFIGURATION_XML_FILE_PATH);
-    }
-    /**
-     * Path to the configuration file used by the tests in this test class.
-     */
-    private static final String TEST_CONFIGURATION_XML_FILE_PATH =
-            "/home/eab/DOMS/examples/integration/trunk/modules/summa/src/test/resources/radioTVTestConfiguration.xml";
+
     /**
      * The current <code>DOMSReadableStorage</code> instance under test.
      */
@@ -43,13 +38,12 @@ public class OfflineDOMSReadableStorageTest {
      * individual test methods may fetch information which is necessary for
      * their execution.
      */
-    private final Configuration testConfiguration;
+    private Configuration testConfiguration;
 
     @Before
-    public void setUp(){
-        final Configuration configuration = testConfiguration;
-        storage = new DOMSReadableStorage(configuration, new OfflineDOMSWSClient());
-
+    public void setUp() throws URISyntaxException {
+        testConfiguration = Configuration.load(new File(Thread.currentThread().getContextClassLoader().getResource("radioTVTestConfiguration.xml").toURI()).getAbsolutePath());
+        storage = new DOMSReadableStorage(testConfiguration, new OfflineDOMSWSClient());
     }
 
     @Test(expected = IllegalArgumentException.class)

@@ -29,6 +29,11 @@ package dk.statsbiblioteket.doms.integration.summa;
 import dk.statsbiblioteket.doms.client.DomsWSClient;
 import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
 import dk.statsbiblioteket.doms.client.ServerOperationFailed;
+import dk.statsbiblioteket.doms.integration.summa.exceptions.DOMSCommunicationError;
+import dk.statsbiblioteket.doms.integration.summa.exceptions.RegistryFullException;
+import dk.statsbiblioteket.doms.integration.summa.exceptions.UnknownKeyException;
+import dk.statsbiblioteket.doms.integration.summa.parsing.ConfigurationKeys;
+import dk.statsbiblioteket.doms.integration.summa.registry.SelfCleaningObjectRegistry;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
@@ -150,7 +155,7 @@ public class DOMSReadableStorage implements Storage {
         }
 
         try {
-            final String objectState = "Published"; // FIXME! Hard-coded
+
             // value...
             if (summaBaseID != null) {
 
@@ -159,6 +164,7 @@ public class DOMSReadableStorage implements Storage {
 
                 final URI collectionPID = baseConfiguration.getCollectionPID();
                 final String viewID = baseConfiguration.getViewID();
+                final String objectState = baseConfiguration.getObjectState();
 
                 return domsClient.getModificationTime(collectionPID.toString(),
                         viewID, objectState);
@@ -171,6 +177,7 @@ public class DOMSReadableStorage implements Storage {
                     final String collectionPIDString = currentConfiguration
                             .getCollectionPID().toString();
                     final String viewID = currentConfiguration.getViewID();
+                    final String objectState = currentConfiguration.getObjectState();
 
                     long currentTimeStamp = domsClient.getModificationTime(
                             collectionPIDString, viewID, objectState);
@@ -590,8 +597,12 @@ public class DOMSReadableStorage implements Storage {
                 final String viewID = subConfiguration
                         .getString(ConfigurationKeys.VIEW_ID);
 
+                final String objectState = subConfiguration
+                        .getString(ConfigurationKeys.OBJECT_STATE);
+
+
                 BaseDOMSConfiguration newBaseConfig = new BaseDOMSConfiguration(
-                        collectionPID, viewID);
+                        collectionPID, viewID, objectState);
 
                 previousConfig = baseConfigurationsMap.put(baseID,
                         newBaseConfig);

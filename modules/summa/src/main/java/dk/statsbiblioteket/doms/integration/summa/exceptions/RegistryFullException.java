@@ -24,7 +24,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package dk.statsbiblioteket.doms.integration.summa;
+package dk.statsbiblioteket.doms.integration.summa.exceptions;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
