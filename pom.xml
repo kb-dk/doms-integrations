@@ -19,7 +19,7 @@
 
 
     <modules>
-        <module>modules/summa</module>
+        <module>summa</module>
     </modules>
 
     <dependencyManagement>
@@ -27,7 +27,7 @@
             <dependency>
                 <groupId>dk.statsbiblioteket.doms.client</groupId>
                 <artifactId>domsClient</artifactId>
-                <version>0.0.10-SNAPSHOT</version>
+                <version>0.0.10</version>
             </dependency>
             <dependency>
                 <groupId>dk.statsbiblioteket.summa</groupId>
