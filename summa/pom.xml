@@ -5,8 +5,6 @@
     <parent>
         <groupId>dk.statsbiblioteket.doms.summa</groupId>
         <artifactId>summa</artifactId>
-	<!-- FIXME! The relativePath element is a cowboy-hack for making the current odd-ball directory structure work with maven 3. Thus, it should be removed when the structure has been fixed. -->
-        <relativePath>../..</relativePath>
         <version>0.0.8-SNAPSHOT</version>
     </parent>
 
