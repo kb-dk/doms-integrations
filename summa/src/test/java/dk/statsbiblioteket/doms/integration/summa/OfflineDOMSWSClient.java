@@ -4,9 +4,9 @@ import dk.statsbiblioteket.doms.central.*;
 import dk.statsbiblioteket.doms.client.*;
 import dk.statsbiblioteket.doms.client.exceptions.NoObjectFound;
 import dk.statsbiblioteket.doms.client.exceptions.ServerOperationFailed;
-import dk.statsbiblioteket.doms.client.objects.FedoraState;
 import dk.statsbiblioteket.doms.client.relations.LiteralRelation;
 import dk.statsbiblioteket.doms.client.relations.Relation;
+import dk.statsbiblioteket.doms.client.utils.Constants;
 import dk.statsbiblioteket.doms.client.utils.FileInfo;
 import org.w3c.dom.Document;
 
@@ -59,7 +59,7 @@ public class OfflineDOMSWSClient implements DomsWSClient {
     }
 
     @Override
-    public FedoraState getState(String pid) throws ServerOperationFailed {
+    public Constants.FedoraState getState(String pid) throws ServerOperationFailed {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
 
