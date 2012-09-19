@@ -4,6 +4,8 @@ import dk.statsbiblioteket.doms.central.*;
 import dk.statsbiblioteket.doms.client.*;
 import dk.statsbiblioteket.doms.client.exceptions.NoObjectFound;
 import dk.statsbiblioteket.doms.client.exceptions.ServerOperationFailed;
+import dk.statsbiblioteket.doms.client.exceptions.XMLParseException;
+import dk.statsbiblioteket.doms.client.objects.DigitalObjectFactory;
 import dk.statsbiblioteket.doms.client.relations.LiteralRelation;
 import dk.statsbiblioteket.doms.client.relations.Relation;
 import dk.statsbiblioteket.doms.client.utils.Constants;
@@ -79,6 +81,11 @@ public class OfflineDOMSWSClient implements DomsWSClient {
     }
 
     @Override
+    public DigitalObjectFactory getDigitalObjectFactory() {
+        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    @Override
     public String getLabel(String uuid) {
         return null;  //To change body of implemented methods use File | Settings | File Templates.
     }
@@ -133,6 +140,10 @@ public class OfflineDOMSWSClient implements DomsWSClient {
     }
 
     @Override
+    public void addObjectRelation(String pid, String predicate, String objectPid, String comment) throws ServerOperationFailed, XMLParseException {
+        //To change body of implemented methods use File | Settings | File Templates.
+    }
+
     public void addObjectRelation(LiteralRelation relation, String comment) throws ServerOperationFailed {
         //To change body of implemented methods use File | Settings | File Templates.
     }
