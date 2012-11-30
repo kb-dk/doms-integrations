@@ -10,7 +10,7 @@
         </entry>
         <entry>
             <key>DOMSWebserviceURL</key>
-            <value class="string">http://alhena:7780/centralWebservice-service/central/?wsdl
+            <value class="string">http://alhena:7480/centralWebservice-service/central/?wsdl
             </value>
         </entry>
 
@@ -26,6 +26,26 @@
                     <entry>
                         <key>collectionPID</key>
                         <value class="string">doms:RadioTV_Collection
+                        </value>
+                    </entry>
+                    <entry>
+                        <key>viewID</key>
+                        <value class="string">SummaVisible</value>
+                    </entry>
+                    <entry>
+                        <key>State</key>
+                        <value class="string">NotDeleted</value>
+                    </entry>
+
+                </xproperties>
+                <xproperties>
+                    <entry>
+                        <key>collectionBaseID</key>
+                        <value class="string">doms_reklameCollection</value>
+                    </entry>
+                    <entry>
+                        <key>collectionPID</key>
+                        <value class="string">doms:Collection_Reklamefilm
                         </value>
                     </entry>
                     <entry>

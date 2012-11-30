@@ -121,6 +121,19 @@ public class OfflineDOMSReadableStorageTest {
     }
 
     @Test
+    public void testGetRecordsModifiedAfterNowNoBaseIDNoOptions(){
+        long timeStamp = System.currentTimeMillis();
+        String summaBaseID = null;
+        QueryOptions options = null;
+        try {
+            assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
+                    options) >= 0);
+        } catch (Exception ex) {
+            System.out.print(ex);
+        }
+    }
+
+    @Test
     public void  testGetRecordModifiedAfterNoOptions(){
         long timeStamp = 0l;
         String summaBaseID = "doms_RadioTVCollection";
