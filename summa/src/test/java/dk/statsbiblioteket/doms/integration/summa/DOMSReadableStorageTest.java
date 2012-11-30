@@ -151,6 +151,40 @@ public class DOMSReadableStorageTest {
      * Test method for
      * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getRecordsModifiedAfter(long, java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)}
      * .
+     *
+     * This test will succeed if <code>getRecordModifiesAfter()</code> returns
+     * an iterator key when it is invoked with a late time-stamp (after all modifications)
+     * and the test base ID returned by the
+     * <code>getTestBaseID()</code> helper method in this test class.
+     */
+    @Test
+    public void testGetRecordsModifiedAfterNow() {
+        try {
+            final long SINCE_NOW = System.currentTimeMillis();
+            final long iteratorKey = storage.getRecordsModifiedAfter(
+                    SINCE_NOW, null, null);
+            // Expect no elements in the configured collection.
+            try {
+                storage.next(iteratorKey);
+                fail("Expected exception");
+            } catch (NoSuchElementException e) {
+                //Expected
+            }
+
+        } catch (Exception exception) {
+            final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            final PrintStream failureMessage = new PrintStream(bos);
+            failureMessage.print("testNextLong(): Caught exception: ");
+            exception.printStackTrace(failureMessage);
+            failureMessage.flush();
+            fail(bos.toString());
+        }
+    }
+
+    /**
+     * Test method for
+     * {@link dk.statsbiblioteket.doms.integration.summa.DOMSReadableStorage#getRecordsModifiedAfter(long, java.lang.String, dk.statsbiblioteket.summa.storage.api.QueryOptions)}
+     * .
      * 
      * This test will succeed if <code>getRecordModifiesAfter()</code> returns
      * an iterator key when it is invoked with a zero time-stamp (the beginning

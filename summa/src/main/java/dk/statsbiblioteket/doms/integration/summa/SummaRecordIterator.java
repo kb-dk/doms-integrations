@@ -264,10 +264,11 @@ import java.util.*;
         if (log.isTraceEnabled()) {
             log.trace("fillCache(): Entering.");
         }
-        for (String summaBaseID : baseStates.keySet()) {
+        for (Iterator<String> iterator = baseStates.keySet().iterator(); iterator.hasNext(); ) {
+            String summaBaseID = iterator.next();
             final BaseState summaBaseState = baseStates.get(summaBaseID);
             if (summaBaseState.getCurrentRecordDescriptionCount() == 0) {
-                fetchBaseRecordDescriptions(summaBaseID);
+                fetchBaseRecordDescriptions(summaBaseID, iterator);
             }
         }
         if (log.isTraceEnabled()) {
@@ -281,15 +282,17 @@ import java.util.*;
      * from the DOMS, create <code>BaseRecordDescription</code> for each of them
      * and add them to the <code>baseRecordDescriptions Set</code> attribute.
      * 
+     *
      * @param summaBaseID
      *            the ID to use for resolving the collection PID and view ID to
      *            use when building the <code>BaseRecordDescription</code>
      *            instances.
+     * @param iterator The iterator currently going through base collections, used for removing.
      * @throws DOMSCommunicationError
      *             if the operation fails due to a communication or server
      *             error.
      */
-    private void fetchBaseRecordDescriptions(String summaBaseID)
+    private void fetchBaseRecordDescriptions(String summaBaseID, Iterator<String> iterator)
             throws DOMSCommunicationError {
 
         if (log.isTraceEnabled()) {
@@ -318,7 +321,7 @@ import java.util.*;
         // Remove the base information from the base state map if there are
         // no more record descriptions available.
         if (retrievedRecordDescriptions.isEmpty()) {
-            baseStates.remove(summaBaseID);
+            iterator.remove();
             retrievedRecordDescriptions = new LinkedList<RecordDescription>();
             if (log.isTraceEnabled()) {
                 log.trace("fetchBaseRecordDescriptions(String): The DOMS "
