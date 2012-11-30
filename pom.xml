@@ -17,6 +17,14 @@
         <url>https://github.com/statsbiblioteket/doms-integrations</url>
     </scm>
 
+    <repositories>
+        <repository>
+            <id>sbprojects-nexus</id>
+            <url>https://sbprojects.statsbiblioteket.dk/nexus/content/groups/public</url>
+            <releases><enabled>true</enabled></releases>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
 
     <modules>
         <module>summa</module>
@@ -27,12 +35,18 @@
             <dependency>
                 <groupId>dk.statsbiblioteket.doms.client</groupId>
                 <artifactId>domsClient</artifactId>
-                <version>0.0.15-SNAPSHOT</version>
+                <version>0.0.15</version>
             </dependency>
             <dependency>
                 <groupId>dk.statsbiblioteket.summa</groupId>
-                <artifactId>summa-storage</artifactId>
-                <version>1.6.7</version>
+                <artifactId>summa-core</artifactId>
+                <version>2.0.0-20121116-trunk-SNAPSHOT</version>
+                <scope>provided</scope>
+            </dependency>
+            <dependency>
+                <groupId>dk.statsbiblioteket.summa</groupId>
+                <artifactId>summa-exposed</artifactId>
+                <version>2.0.0-20121116-trunk-SNAPSHOT</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>

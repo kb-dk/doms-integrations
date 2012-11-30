@@ -45,7 +45,12 @@
         </dependency>
         <dependency>
             <groupId>dk.statsbiblioteket.summa</groupId>
-            <artifactId>summa-storage</artifactId>
+            <artifactId>summa-core</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>dk.statsbiblioteket.summa</groupId>
+            <artifactId>summa-exposed</artifactId>
             <scope>provided</scope>
         </dependency>
         <dependency>
