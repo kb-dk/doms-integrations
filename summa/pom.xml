@@ -10,7 +10,6 @@
 
     <groupId>dk.statsbiblioteket.doms.summa</groupId>
     <artifactId>summaStorage</artifactId>
-    <version>0.0.8-SNAPSHOT</version>
 
     <build>
         <plugins>
