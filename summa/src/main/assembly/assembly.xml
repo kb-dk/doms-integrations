@@ -1,7 +1,7 @@
 <assembly>
-    <id>ingester</id>
+    <id>package</id>
     <formats>
-        <format>zip</format>
+        <format>tar.gz</format>
     </formats>
 
     <dependencySets>
