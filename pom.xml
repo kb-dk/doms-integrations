@@ -3,7 +3,7 @@
     <parent>
         <groupId>dk.statsbiblioteket.doms</groupId>
         <artifactId>doms</artifactId>
-        <version>0.1.3</version>
+        <version>0.1.5-SNAPSHOT</version>
     </parent>
 
     <groupId>dk.statsbiblioteket.doms.summa</groupId>
