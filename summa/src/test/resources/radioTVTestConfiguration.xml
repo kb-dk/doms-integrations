@@ -25,8 +25,7 @@
                     </entry>
                     <entry>
                         <key>collectionPID</key>
-                        <value class="string">doms:RadioTV_Collection
-                        </value>
+                        <value class="string">doms:RadioTV_Collection</value>
                     </entry>
                     <entry>
                         <key>viewID</key>
@@ -45,8 +44,7 @@
                     </entry>
                     <entry>
                         <key>collectionPID</key>
-                        <value class="string">doms:Collection_Reklamefilm
-                        </value>
+                        <value class="string">doms:Collection_Reklamefilm</value>
                     </entry>
                     <entry>
                         <key>viewID</key>
