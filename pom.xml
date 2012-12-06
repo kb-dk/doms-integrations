@@ -17,6 +17,7 @@
         <url>https://github.com/statsbiblioteket/doms-integrations</url>
     </scm>
 
+    <!-- TODO make Summa release to sbforge.org -->
     <repositories>
         <repository>
             <id>sbprojects-nexus</id>
