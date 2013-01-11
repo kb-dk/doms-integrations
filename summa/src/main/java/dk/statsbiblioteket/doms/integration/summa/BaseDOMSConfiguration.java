@@ -55,6 +55,11 @@ public class BaseDOMSConfiguration {
      */
     private final String objectState;
 
+    /**
+     * The number of records to retrieve.
+     */
+    private final long recordCountPerRetrieval;
+
     public String getObjectState() {
         return objectState;
     }
@@ -67,11 +72,13 @@ public class BaseDOMSConfiguration {
      *            PID of the collection i question.
      * @param viewID
      * @param objectState
+     * @param recordCountPerRetrieval
      */
-    public BaseDOMSConfiguration(URI collectionPID, String viewID, String objectState) {
+    public BaseDOMSConfiguration(URI collectionPID, String viewID, String objectState, long recordCountPerRetrieval) {
         this.collectionPID = collectionPID;
         this.viewID = viewID;
         this.objectState = objectState;
+        this.recordCountPerRetrieval = recordCountPerRetrieval;
     }
 
     /**
@@ -91,6 +98,16 @@ public class BaseDOMSConfiguration {
      */
     public String getViewID() {
         return viewID;
+    }
+
+
+    /**
+     * Get the number of records to retrieve.
+     *
+     * @return The number of records to retrieve.
+     */
+    public long getRecordCountPerRetrieval() {
+        return recordCountPerRetrieval;
     }
 
     /* (non-Javadoc)

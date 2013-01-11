@@ -26,16 +26,24 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dk.statsbiblioteket.doms.central.RecordDescription;
 import dk.statsbiblioteket.doms.client.DomsWSClient;
 import dk.statsbiblioteket.doms.client.exceptions.ServerOperationFailed;
 import dk.statsbiblioteket.doms.integration.summa.exceptions.DOMSCommunicationError;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
@@ -43,8 +51,6 @@ import java.util.*;
     class SummaRecordIterator implements Iterator<Record> {
 
     private static final Log log = LogFactory.getLog(SummaRecordIterator.class);
-
-    private static final long RECORD_COUNT_PER_RETRIEVAL = 100;
 
     /**
      * The client, connected to the DOMS server to retrieve objects from.
@@ -316,7 +322,8 @@ import java.util.*;
                 .getNextRecordDescriptionIndex();
 
         retrievedRecordDescriptions = retrieveRecordDescriptions(
-                collectionPIDString, viewID, objectState, currentRecordIndex);
+                collectionPIDString, viewID, objectState, currentRecordIndex,
+                baseConfiguration.getRecordCountPerRetrieval());
 
         // Remove the base information from the base state map if there are
         // no more record descriptions available.
@@ -384,6 +391,8 @@ import java.util.*;
      * @param offsetIndex
      *            The index in the sequence of modified records to start
      *            retrieval from.
+     * @param recordCountPerRetrieval
+     *            The number of records to retrieve in one retrieval.
      * @return a <code>List</code> of
      *         <code>RecordDescription<code> instances identifying DOMS objects
      *          which have been modified.
@@ -393,15 +402,14 @@ import java.util.*;
      */
     private List<RecordDescription> retrieveRecordDescriptions(
             String collectionPIDString, String viewID, String objectState,
-            long offsetIndex) throws DOMSCommunicationError {
+            long offsetIndex, long recordCountPerRetrieval) throws DOMSCommunicationError {
 
         try {
             return domsClient.getModifiedEntryObjects(collectionPIDString,
-                    viewID, startTimeStamp, objectState, offsetIndex,
-                    RECORD_COUNT_PER_RETRIEVAL);
+                    viewID, startTimeStamp, objectState, offsetIndex, recordCountPerRetrieval);
         } catch (ServerOperationFailed serverOperationFailed) {
             final String errorMessage = "Failed retrieving up to "
-                    + RECORD_COUNT_PER_RETRIEVAL + "records " + "(startTime = "
+                    + recordCountPerRetrieval + "records " + "(startTime = "
                     + startTimeStamp + " start index = " + offsetIndex
                     + " viewID = " + viewID + " objectState = " + objectState
                     + ") from the specified collection (PID = "

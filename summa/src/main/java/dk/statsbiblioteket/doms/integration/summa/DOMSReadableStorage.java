@@ -26,6 +26,10 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+
 import dk.statsbiblioteket.doms.client.DomsWSClient;
 import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
 import dk.statsbiblioteket.doms.client.exceptions.ServerOperationFailed;
@@ -38,15 +42,19 @@ import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.Storage;
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
@@ -600,9 +608,11 @@ public class DOMSReadableStorage implements Storage {
                 final String objectState = subConfiguration
                         .getString(ConfigurationKeys.OBJECT_STATE);
 
+                final long recordCountPerRetrieval = subConfiguration
+                        .getLong(ConfigurationKeys.OBJECT_COUNT_PER_RETRIEVAL, 10000);
 
                 BaseDOMSConfiguration newBaseConfig = new BaseDOMSConfiguration(
-                        collectionPID, viewID, objectState);
+                        collectionPID, viewID, objectState, recordCountPerRetrieval);
 
                 previousConfig = baseConfigurationsMap.put(baseID,
                         newBaseConfig);
