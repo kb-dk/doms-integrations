@@ -51,11 +51,6 @@ public class ConfigurationKeys {
     public static final String COLLECTION_PID = "collectionPID";
 
     /**
-     * Key for the content model entry object PID element in a base declaration.
-     */
-    public static final String COLLECTION_ENTRY_CONTENT_MODEL_PID = "collectionEntryContentModelPID";
-
-    /**
      * Key for the view ID element in a base declaration.
      */
     public static final String VIEW_ID = "viewID";
@@ -75,4 +70,5 @@ public class ConfigurationKeys {
      */
     public static final String DOMS_API_WEBSERVICE_URL = "DOMSWebserviceURL";
     public static final String OBJECT_STATE = "State";
+    public static final String OBJECT_COUNT_PER_RETRIEVAL = "ObjectCountPerRetrieval";
 }
