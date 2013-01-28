@@ -35,6 +35,8 @@ class BaseState {
 
     private long currentRecordDescriptionCount;
 
+    private boolean filled = false;
+
     BaseState() {
         setNextRecordDescriptionIndex(0);
         setCurrentRecordDescriptionCount(0);
@@ -71,4 +73,12 @@ class BaseState {
         return currentRecordDescriptionCount;
     }
 
+
+    public boolean isFilled() {
+        return filled;
+    }
+
+    public void setFilled(boolean filled) {
+        this.filled = filled;
+    }
 }
