@@ -48,7 +48,7 @@ import java.util.TreeSet;
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
-    class SummaRecordIterator implements Iterator<Record> {
+class SummaRecordIterator implements Iterator<Record> {
 
     private static final Log log = LogFactory.getLog(SummaRecordIterator.class);
 
@@ -69,8 +69,8 @@ import java.util.TreeSet;
     private final Map<String, BaseState> baseStates;
 
     SummaRecordIterator(DomsWSClient domsClient,
-            Map<String, BaseDOMSConfiguration> baseConfigurations,
-            Set<String> summaBaseIDs, long timeStamp, QueryOptions options) {
+                        Map<String, BaseDOMSConfiguration> baseConfigurations,
+                        Set<String> summaBaseIDs, long timeStamp, QueryOptions options) {
 
         this.domsClient = domsClient;
         this.baseConfigurations = baseConfigurations;
@@ -144,7 +144,7 @@ import java.util.TreeSet;
 
     /**
      * Unsupported operation.
-     * 
+     *
      * @see java.util.Iterator#remove()
      */
     public void remove() {
@@ -156,7 +156,7 @@ import java.util.TreeSet;
      * <code>baseRecordDescriptions</code> and update the instance counter for
      * the Summa base which its <code>RecordDescription</code> was retrieved
      * from.
-     * 
+     *
      * @return the <code>BaseRecordDescription</code> in
      *         <code>baseRecordDescriptions</code> containing the
      *         <code>RecordDescription</code> with the lowest time-stamp.
@@ -192,10 +192,10 @@ import java.util.TreeSet;
      * counter for the Summa base which its <code>RecordDescription</code> was
      * retrieved from.
      * <p/>
-     * 
+     *
      * This method enables the iterator to undo a next() operation if it fails
      * to build a <code>Record</code> due to communication/server errors.
-     * 
+     *
      * @param baseRecordDescription
      *            the <code>BaseRecordDescription</code> in
      *            <code>baseRecordDescriptions</code> containing the
@@ -229,7 +229,7 @@ import java.util.TreeSet;
      * Create and initialise a <code>BaseState</code> instance for each base ID
      * in <code>baseIDs</code> and associate them in the returned
      * <code>Map</code>.
-     * 
+     *
      * @param baseIDs
      *            a <code>Set</code> of base IDs to create base state map from.
      * @return a <code>Map</code> which associates each of the base IDs from
@@ -260,7 +260,7 @@ import java.util.TreeSet;
      * <code>RecordDescription</code> instances is determined by the
      * <code>RECORD_COUNT_PER_RETRIEVAL</code> constant and will be added to the
      * <code>baseRecordDescriptions</code> attribute.
-     * 
+     *
      * @throws DOMSCommunicationError
      *             if any problems are encountered while retriving
      *             <code>RecordDescription</code> instances from the DOMS.
@@ -287,7 +287,7 @@ import java.util.TreeSet;
      * Fetch up to <code>recordCountToFetch RecordDescription</code> instances
      * from the DOMS, create <code>BaseRecordDescription</code> for each of them
      * and add them to the <code>baseRecordDescriptions Set</code> attribute.
-     * 
+     *
      *
      * @param summaBaseID
      *            the ID to use for resolving the collection PID and view ID to
@@ -317,6 +317,12 @@ import java.util.TreeSet;
 
         List<RecordDescription> retrievedRecordDescriptions = null;
         final BaseState summaBaseState = baseStates.get(summaBaseID);
+
+        if (summaBaseState.isFilled()){
+            return;
+        } else {
+            summaBaseState.setFilled(true);
+        }
 
         final long currentRecordIndex = summaBaseState
                 .getNextRecordDescriptionIndex();
@@ -379,7 +385,7 @@ import java.util.TreeSet;
      * objects that have been modified or have modified objects associated in
      * the specified view. The size of the chunk is specified by the constant
      * <code>RECORD_COUNT_PER_RETRIEVAL</code>.
-     * 
+     *
      * @param collectionPIDString
      *            The PID of the collection to retrieve
      *            <code>RecordDescription</code> instances from.
@@ -428,7 +434,7 @@ import java.util.TreeSet;
      * Build a Summa <code>Record</code> from the information provided by the
      * <code>BaseRecordDescription</code> provided by
      * <code>baseRecordDescription</code>.
-     * 
+     *
      * @param baseRecordDescription
      *            a <code>BaseRecordDescription</code> instance containing the
      *            necessary information for building a <code>Record</code>.
