@@ -5,7 +5,7 @@
     <parent>
         <groupId>dk.statsbiblioteket.doms.summa</groupId>
         <artifactId>summa</artifactId>
-        <version>0.0.8</version>
+        <version>0.0.8-SNAPSHOT</version>
     </parent>
 
     <groupId>dk.statsbiblioteket.doms.summa</groupId>
@@ -46,12 +46,6 @@
             <groupId>dk.statsbiblioteket.summa</groupId>
             <artifactId>summa-storage</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>dk.statsbiblioteket.sbutil</groupId>
-            <artifactId>sbutil</artifactId>
-            <version>0.5.7</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
