@@ -44,13 +44,14 @@
         </dependency>
         <dependency>
             <groupId>dk.statsbiblioteket.summa</groupId>
-            <artifactId>summa-core</artifactId>
+            <artifactId>summa-storage</artifactId>
             <scope>provided</scope>
         </dependency>
+
         <dependency>
-            <groupId>dk.statsbiblioteket.summa</groupId>
-            <artifactId>summa-exposed</artifactId>
-            <scope>provided</scope>
+            <groupId>dk.statsbiblioteket.sbutil</groupId>
+            <artifactId>sbutil</artifactId>
+            <version>0.5.7</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
