@@ -318,17 +318,14 @@ class SummaRecordIterator implements Iterator<Record> {
         List<RecordDescription> retrievedRecordDescriptions = null;
         final BaseState summaBaseState = baseStates.get(summaBaseID);
 
-        if (summaBaseState.isFilled()){
-            return;
-        } else {
-            summaBaseState.setFilled(true);
+        long startTime = summaBaseState
+                .getNextStartTime();
+        if (startTime < 0){
+            startTime = this.startTimeStamp;
         }
 
-        final long currentRecordIndex = summaBaseState
-                .getNextRecordDescriptionIndex();
-
         retrievedRecordDescriptions = retrieveRecordDescriptions(
-                collectionPIDString, viewID, objectState, currentRecordIndex,
+                collectionPIDString, viewID, objectState, startTime,
                 baseConfiguration.getRecordCountPerRetrieval());
 
         // Remove the base information from the base state map if there are
@@ -356,12 +353,8 @@ class SummaRecordIterator implements Iterator<Record> {
             // addition to avoid any errors.
             summaBaseState.setCurrentRecordDescriptionCount(currentCount
                     + retrievedRecordDescriptions.size());
+            summaBaseState.setNextStartTime(retrievedRecordDescriptions.get(retrievedRecordDescriptions.size()-1).getDate());
 
-            // Move the index forward with the amount of records just
-            // retrieved.
-            summaBaseState.setNextRecordDescriptionIndex(summaBaseState
-                    .getNextRecordDescriptionIndex()
-                    + retrievedRecordDescriptions.size());
         }
 
         // Build BaseRecordDescription instances for each RecordDescription
@@ -394,9 +387,8 @@ class SummaRecordIterator implements Iterator<Record> {
      * @param objectState
      *            The state an object must be in, in order to be a candidate for
      *            retrieval.
-     * @param offsetIndex
-     *            The index in the sequence of modified records to start
-     *            retrieval from.
+     * @param startTimeStamp
+     *            The timestamp to Start retrieval from
      * @param recordCountPerRetrieval
      *            The number of records to retrieve in one retrieval.
      * @return a <code>List</code> of
@@ -408,15 +400,15 @@ class SummaRecordIterator implements Iterator<Record> {
      */
     private List<RecordDescription> retrieveRecordDescriptions(
             String collectionPIDString, String viewID, String objectState,
-            long offsetIndex, long recordCountPerRetrieval) throws DOMSCommunicationError {
+            long startTimeStamp, long recordCountPerRetrieval) throws DOMSCommunicationError {
 
         try {
             return domsClient.getModifiedEntryObjects(collectionPIDString,
-                    viewID, startTimeStamp, objectState, offsetIndex, recordCountPerRetrieval);
+                    viewID, startTimeStamp, objectState, 0, recordCountPerRetrieval);
         } catch (ServerOperationFailed serverOperationFailed) {
             final String errorMessage = "Failed retrieving up to "
                     + recordCountPerRetrieval + "records " + "(startTime = "
-                    + startTimeStamp + " start index = " + offsetIndex
+                    + startTimeStamp + " start index = " + 0
                     + " viewID = " + viewID + " objectState = " + objectState
                     + ") from the specified collection (PID = "
                     + collectionPIDString + ").";
@@ -491,7 +483,7 @@ class SummaRecordIterator implements Iterator<Record> {
         } catch (ServerOperationFailed serverOperationFailed) {
 
             final String errorMessage = "Failed retrieving record "
-                    + "(startTime = " + startTimeStamp + " viewID = "
+                    + "(viewID = "
                     + baseConfiguration.getViewID()
                     + ") from collection (PID = "
                     + baseConfiguration.getCollectionPID() + ").";

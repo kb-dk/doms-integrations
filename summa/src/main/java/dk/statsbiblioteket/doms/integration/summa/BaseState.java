@@ -31,30 +31,29 @@ package dk.statsbiblioteket.doms.integration.summa;
  */
 class BaseState {
 
-    private long nextRecordDescriptionIndex;
+    private long nextStartTime;
 
     private long currentRecordDescriptionCount;
 
-    private boolean filled = false;
 
     BaseState() {
-        setNextRecordDescriptionIndex(0);
+        setNextStartTime(-1);
         setCurrentRecordDescriptionCount(0);
     }
 
     /**
-     * @param nextRecordDescriptionIndex
-     *            the nextRecordDescriptionIndex to set
+     * @param nextStartTime
+     *            the nextStartTime to set
      */
-    public void setNextRecordDescriptionIndex(long nextRecordDescriptionIndex) {
-        this.nextRecordDescriptionIndex = nextRecordDescriptionIndex;
+    public void setNextStartTime(long nextStartTime) {
+        this.nextStartTime = nextStartTime;
     }
 
     /**
-     * @return the nextRecordDescriptionIndex
+     * @return the nextStartTime
      */
-    public long getNextRecordDescriptionIndex() {
-        return nextRecordDescriptionIndex;
+    public long getNextStartTime() {
+        return nextStartTime;
     }
 
     /**
@@ -73,12 +72,4 @@ class BaseState {
         return currentRecordDescriptionCount;
     }
 
-
-    public boolean isFilled() {
-        return filled;
-    }
-
-    public void setFilled(boolean filled) {
-        this.filled = filled;
-    }
 }
