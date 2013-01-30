@@ -270,6 +270,9 @@ public class OnlineDOMSReadableStorageTest {
                     // validate it
                     // anyway.
                     assertNotNull(storage.next(iteratorKey));
+                    if (i % 100 == 0){
+                        System.out.println(i);
+                    }
                 }
 
                 fail("The iterator (key = " + iteratorKey

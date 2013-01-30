@@ -33,7 +33,7 @@
                     </entry>
                     <entry>
                         <key>State</key>
-                        <value class="string">NotDeleted</value>
+                        <value class="string">Published</value>
                     </entry>
 
                 </xproperties>
@@ -52,7 +52,7 @@
                     </entry>
                     <entry>
                         <key>State</key>
-                        <value class="string">NotDeleted</value>
+                        <value class="string">Published</value>
                     </entry>
 
                 </xproperties>
