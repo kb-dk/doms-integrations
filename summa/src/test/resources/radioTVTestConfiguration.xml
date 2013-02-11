@@ -13,6 +13,12 @@
             <value class="string">http://alhena:7480/centralWebservice-service/central/?wsdl
             </value>
         </entry>
+        <entry>
+            <key>ObjectCountPerRetrieval</key>
+            <value class="int">100</value>
+        </entry>
+
+
 
         <!-- Currently working example entry. -->
         <entry>

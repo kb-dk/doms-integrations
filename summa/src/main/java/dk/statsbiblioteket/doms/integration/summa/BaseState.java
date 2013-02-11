@@ -29,16 +29,19 @@ package dk.statsbiblioteket.doms.integration.summa;
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
-class BaseState {
+public class BaseState {
 
     private long nextStartTime;
 
     private long currentRecordDescriptionCount;
 
+    private boolean reachedEnd;
+
 
     BaseState() {
         setNextStartTime(-1);
         setCurrentRecordDescriptionCount(0);
+        reachedEnd = false;
     }
 
     /**
@@ -72,4 +75,12 @@ class BaseState {
         return currentRecordDescriptionCount;
     }
 
+
+    public boolean isReachedEnd() {
+        return reachedEnd;
+    }
+
+    public void setReachedEnd(boolean reachedEnd) {
+        this.reachedEnd = reachedEnd;
+    }
 }

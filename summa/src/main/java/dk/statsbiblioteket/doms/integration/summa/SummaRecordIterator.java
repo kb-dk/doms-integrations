@@ -270,15 +270,18 @@ class SummaRecordIterator implements Iterator<Record> {
         if (log.isTraceEnabled()) {
             log.trace("fillCache(): Entering.");
         }
+        boolean updates = false;
         for (Iterator<String> iterator = baseStates.keySet().iterator(); iterator.hasNext(); ) {
             String summaBaseID = iterator.next();
             final BaseState summaBaseState = baseStates.get(summaBaseID);
             if (summaBaseState.getCurrentRecordDescriptionCount() == 0) {
                 fetchBaseRecordDescriptions(summaBaseID, iterator);
+                updates = true;
             }
         }
-        if (log.isTraceEnabled()) {
-            log.trace("fillCache(): Successfully updated the cache for "
+
+        if (updates){
+            log.info("fillCache(): Successfully updated the cache for "
                     + baseStates.keySet().size() + " base IDs.");
         }
     }
@@ -315,36 +318,43 @@ class SummaRecordIterator implements Iterator<Record> {
 
         final String objectState = baseConfiguration.getObjectState();
 
-        List<RecordDescription> retrievedRecordDescriptions = null;
+        List<RecordDescription> retrievedRecordDescriptions = new LinkedList<RecordDescription>();
         final BaseState summaBaseState = baseStates.get(summaBaseID);
 
-        long startTime = summaBaseState
-                .getNextStartTime();
+        long startTime = summaBaseState.getNextStartTime();
         if (startTime < 0){
             startTime = this.startTimeStamp;
         }
+        if (!summaBaseState.isReachedEnd()){
 
-        retrievedRecordDescriptions = retrieveRecordDescriptions(
-                collectionPIDString, viewID, objectState, startTime,
-                baseConfiguration.getRecordCountPerRetrieval());
 
+            retrievedRecordDescriptions = retrieveRecordDescriptions(
+                    collectionPIDString, viewID, objectState, startTime,
+                    baseConfiguration.getRecordCountPerRetrieval());
+        } else {
+            log.info("Iterator for basestate "+summaBaseID+" was marked as having reached end previously. Do not fetch" +
+                    " any further objects");
+        }
         // Remove the base information from the base state map if there are
         // no more record descriptions available.
         if (retrievedRecordDescriptions.isEmpty()) {
             iterator.remove();
-            retrievedRecordDescriptions = new LinkedList<RecordDescription>();
-            if (log.isTraceEnabled()) {
-                log.trace("fetchBaseRecordDescriptions(String): The DOMS "
-                        + "has no more records for this base (base ID = '"
-                        + summaBaseID + "'. Removing it from the map of "
-                        + "active base IDs.");
+
+
+            log.info("fetchBaseRecordDescriptions(String): The DOMS "
+                    + "has no more records for this base (base ID = '"
+                    + summaBaseID + "'. Removing it from the map of "
+                    + "active base IDs.");
+
+        }  else {
+            if (retrievedRecordDescriptions.size() < baseConfiguration.getRecordCountPerRetrieval()){
+                summaBaseState.setReachedEnd(true);
             }
-        } else {
 
             final long currentCount = summaBaseState
                     .getCurrentRecordDescriptionCount();
             if (currentCount != 0) {
-                log.warn("fetchBaseRecordDescriptions(String): The cache"
+                log.debug("fetchBaseRecordDescriptions(String): The cache"
                         + " size for this base ID (" + summaBaseID
                         + ") was non-zero (actual size = " + currentCount
                         + ") when this re-fill was requested.");
@@ -364,13 +374,11 @@ class SummaRecordIterator implements Iterator<Record> {
                     summaBaseID, recordDescription);
             baseRecordDescriptions.add(baseRecordDescription);
         }
+        log.info("fetchBaseRecordDescriptions(String): Returning "
+                + "after adding " + retrievedRecordDescriptions.size()
+                + " record decscriptions to the cache for the Summa"
+                + " base ID: " + summaBaseID);
 
-        if (log.isTraceEnabled()) {
-            log.trace("fetchBaseRecordDescriptions(String): Returning "
-                    + "after adding " + retrievedRecordDescriptions.size()
-                    + " record decscriptions to the cache for the Summa"
-                    + " base ID: " + summaBaseID);
-        }
     }
 
     /**
@@ -427,6 +435,7 @@ class SummaRecordIterator implements Iterator<Record> {
      * <code>BaseRecordDescription</code> provided by
      * <code>baseRecordDescription</code>.
      *
+     *
      * @param baseRecordDescription
      *            a <code>BaseRecordDescription</code> instance containing the
      *            necessary information for building a <code>Record</code>.
@@ -458,8 +467,8 @@ class SummaRecordIterator implements Iterator<Record> {
             final String modifiedEntryObjectPIDString = recordDescription
                     .getPid();
 
-            final byte recordData[] = domsClient.getViewBundle(
-                    modifiedEntryObjectPIDString, viewID).getBytes();
+            final byte recordData[] =
+                                        domsClient.getViewBundle(modifiedEntryObjectPIDString, viewID).getBytes();
 
             // Prepend the base name to the PID in order to make it possible
             // for the DOMSReadableStorage.getRecord() methods to figure out
