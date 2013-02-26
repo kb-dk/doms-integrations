@@ -48,7 +48,7 @@ import java.util.TreeSet;
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
-    class SummaRecordIterator implements Iterator<Record> {
+class SummaRecordIterator implements Iterator<Record> {
 
     private static final Log log = LogFactory.getLog(SummaRecordIterator.class);
 
@@ -69,8 +69,8 @@ import java.util.TreeSet;
     private final Map<String, BaseState> baseStates;
 
     SummaRecordIterator(DomsWSClient domsClient,
-            Map<String, BaseDOMSConfiguration> baseConfigurations,
-            Set<String> summaBaseIDs, long timeStamp, QueryOptions options) {
+                        Map<String, BaseDOMSConfiguration> baseConfigurations,
+                        Set<String> summaBaseIDs, long timeStamp, QueryOptions options) {
 
         this.domsClient = domsClient;
         this.baseConfigurations = baseConfigurations;
@@ -144,7 +144,7 @@ import java.util.TreeSet;
 
     /**
      * Unsupported operation.
-     * 
+     *
      * @see java.util.Iterator#remove()
      */
     public void remove() {
@@ -156,7 +156,7 @@ import java.util.TreeSet;
      * <code>baseRecordDescriptions</code> and update the instance counter for
      * the Summa base which its <code>RecordDescription</code> was retrieved
      * from.
-     * 
+     *
      * @return the <code>BaseRecordDescription</code> in
      *         <code>baseRecordDescriptions</code> containing the
      *         <code>RecordDescription</code> with the lowest time-stamp.
@@ -192,10 +192,10 @@ import java.util.TreeSet;
      * counter for the Summa base which its <code>RecordDescription</code> was
      * retrieved from.
      * <p/>
-     * 
+     *
      * This method enables the iterator to undo a next() operation if it fails
      * to build a <code>Record</code> due to communication/server errors.
-     * 
+     *
      * @param baseRecordDescription
      *            the <code>BaseRecordDescription</code> in
      *            <code>baseRecordDescriptions</code> containing the
@@ -229,7 +229,7 @@ import java.util.TreeSet;
      * Create and initialise a <code>BaseState</code> instance for each base ID
      * in <code>baseIDs</code> and associate them in the returned
      * <code>Map</code>.
-     * 
+     *
      * @param baseIDs
      *            a <code>Set</code> of base IDs to create base state map from.
      * @return a <code>Map</code> which associates each of the base IDs from
@@ -260,7 +260,7 @@ import java.util.TreeSet;
      * <code>RecordDescription</code> instances is determined by the
      * <code>RECORD_COUNT_PER_RETRIEVAL</code> constant and will be added to the
      * <code>baseRecordDescriptions</code> attribute.
-     * 
+     *
      * @throws DOMSCommunicationError
      *             if any problems are encountered while retriving
      *             <code>RecordDescription</code> instances from the DOMS.
@@ -270,15 +270,18 @@ import java.util.TreeSet;
         if (log.isTraceEnabled()) {
             log.trace("fillCache(): Entering.");
         }
+        boolean updates = false;
         for (Iterator<String> iterator = baseStates.keySet().iterator(); iterator.hasNext(); ) {
             String summaBaseID = iterator.next();
             final BaseState summaBaseState = baseStates.get(summaBaseID);
             if (summaBaseState.getCurrentRecordDescriptionCount() == 0) {
                 fetchBaseRecordDescriptions(summaBaseID, iterator);
+                updates = true;
             }
         }
-        if (log.isTraceEnabled()) {
-            log.trace("fillCache(): Successfully updated the cache for "
+
+        if (updates){
+            log.info("fillCache(): Successfully updated the cache for "
                     + baseStates.keySet().size() + " base IDs.");
         }
     }
@@ -287,7 +290,7 @@ import java.util.TreeSet;
      * Fetch up to <code>recordCountToFetch RecordDescription</code> instances
      * from the DOMS, create <code>BaseRecordDescription</code> for each of them
      * and add them to the <code>baseRecordDescriptions Set</code> attribute.
-     * 
+     *
      *
      * @param summaBaseID
      *            the ID to use for resolving the collection PID and view ID to
@@ -315,33 +318,43 @@ import java.util.TreeSet;
 
         final String objectState = baseConfiguration.getObjectState();
 
-        List<RecordDescription> retrievedRecordDescriptions = null;
+        List<RecordDescription> retrievedRecordDescriptions = new LinkedList<RecordDescription>();
         final BaseState summaBaseState = baseStates.get(summaBaseID);
 
-        final long currentRecordIndex = summaBaseState
-                .getNextRecordDescriptionIndex();
+        long startTime = summaBaseState.getNextStartTime();
+        if (startTime < 0){
+            startTime = this.startTimeStamp;
+        }
+        if (!summaBaseState.isReachedEnd()){
 
-        retrievedRecordDescriptions = retrieveRecordDescriptions(
-                collectionPIDString, viewID, objectState, currentRecordIndex,
-                baseConfiguration.getRecordCountPerRetrieval());
 
+            retrievedRecordDescriptions = retrieveRecordDescriptions(
+                    collectionPIDString, viewID, objectState, startTime,
+                    baseConfiguration.getRecordCountPerRetrieval());
+        } else {
+            log.info("Iterator for basestate "+summaBaseID+" was marked as having reached end previously. Do not fetch" +
+                    " any further objects");
+        }
         // Remove the base information from the base state map if there are
         // no more record descriptions available.
         if (retrievedRecordDescriptions.isEmpty()) {
             iterator.remove();
-            retrievedRecordDescriptions = new LinkedList<RecordDescription>();
-            if (log.isTraceEnabled()) {
-                log.trace("fetchBaseRecordDescriptions(String): The DOMS "
-                        + "has no more records for this base (base ID = '"
-                        + summaBaseID + "'. Removing it from the map of "
-                        + "active base IDs.");
+
+
+            log.info("fetchBaseRecordDescriptions(String): The DOMS "
+                    + "has no more records for this base (base ID = '"
+                    + summaBaseID + "'. Removing it from the map of "
+                    + "active base IDs.");
+
+        }  else {
+            if (retrievedRecordDescriptions.size() < baseConfiguration.getRecordCountPerRetrieval()){
+                summaBaseState.setReachedEnd(true);
             }
-        } else {
 
             final long currentCount = summaBaseState
                     .getCurrentRecordDescriptionCount();
             if (currentCount != 0) {
-                log.warn("fetchBaseRecordDescriptions(String): The cache"
+                log.debug("fetchBaseRecordDescriptions(String): The cache"
                         + " size for this base ID (" + summaBaseID
                         + ") was non-zero (actual size = " + currentCount
                         + ") when this re-fill was requested.");
@@ -350,12 +363,8 @@ import java.util.TreeSet;
             // addition to avoid any errors.
             summaBaseState.setCurrentRecordDescriptionCount(currentCount
                     + retrievedRecordDescriptions.size());
+            summaBaseState.setNextStartTime(retrievedRecordDescriptions.get(retrievedRecordDescriptions.size()-1).getDate());
 
-            // Move the index forward with the amount of records just
-            // retrieved.
-            summaBaseState.setNextRecordDescriptionIndex(summaBaseState
-                    .getNextRecordDescriptionIndex()
-                    + retrievedRecordDescriptions.size());
         }
 
         // Build BaseRecordDescription instances for each RecordDescription
@@ -365,13 +374,11 @@ import java.util.TreeSet;
                     summaBaseID, recordDescription);
             baseRecordDescriptions.add(baseRecordDescription);
         }
+        log.info("fetchBaseRecordDescriptions(String): Returning "
+                + "after adding " + retrievedRecordDescriptions.size()
+                + " record decscriptions to the cache for the Summa"
+                + " base ID: " + summaBaseID);
 
-        if (log.isTraceEnabled()) {
-            log.trace("fetchBaseRecordDescriptions(String): Returning "
-                    + "after adding " + retrievedRecordDescriptions.size()
-                    + " record decscriptions to the cache for the Summa"
-                    + " base ID: " + summaBaseID);
-        }
     }
 
     /**
@@ -379,7 +386,7 @@ import java.util.TreeSet;
      * objects that have been modified or have modified objects associated in
      * the specified view. The size of the chunk is specified by the constant
      * <code>RECORD_COUNT_PER_RETRIEVAL</code>.
-     * 
+     *
      * @param collectionPIDString
      *            The PID of the collection to retrieve
      *            <code>RecordDescription</code> instances from.
@@ -388,9 +395,8 @@ import java.util.TreeSet;
      * @param objectState
      *            The state an object must be in, in order to be a candidate for
      *            retrieval.
-     * @param offsetIndex
-     *            The index in the sequence of modified records to start
-     *            retrieval from.
+     * @param startTimeStamp
+     *            The timestamp to Start retrieval from
      * @param recordCountPerRetrieval
      *            The number of records to retrieve in one retrieval.
      * @return a <code>List</code> of
@@ -402,15 +408,15 @@ import java.util.TreeSet;
      */
     private List<RecordDescription> retrieveRecordDescriptions(
             String collectionPIDString, String viewID, String objectState,
-            long offsetIndex, long recordCountPerRetrieval) throws DOMSCommunicationError {
+            long startTimeStamp, long recordCountPerRetrieval) throws DOMSCommunicationError {
 
         try {
             return domsClient.getModifiedEntryObjects(collectionPIDString,
-                    viewID, startTimeStamp, objectState, offsetIndex, recordCountPerRetrieval);
+                    viewID, startTimeStamp, objectState, 0, recordCountPerRetrieval);
         } catch (ServerOperationFailed serverOperationFailed) {
             final String errorMessage = "Failed retrieving up to "
                     + recordCountPerRetrieval + "records " + "(startTime = "
-                    + startTimeStamp + " start index = " + offsetIndex
+                    + startTimeStamp + " start index = " + 0
                     + " viewID = " + viewID + " objectState = " + objectState
                     + ") from the specified collection (PID = "
                     + collectionPIDString + ").";
@@ -428,7 +434,8 @@ import java.util.TreeSet;
      * Build a Summa <code>Record</code> from the information provided by the
      * <code>BaseRecordDescription</code> provided by
      * <code>baseRecordDescription</code>.
-     * 
+     *
+     *
      * @param baseRecordDescription
      *            a <code>BaseRecordDescription</code> instance containing the
      *            necessary information for building a <code>Record</code>.
@@ -460,8 +467,8 @@ import java.util.TreeSet;
             final String modifiedEntryObjectPIDString = recordDescription
                     .getPid();
 
-            final byte recordData[] = domsClient.getViewBundle(
-                    modifiedEntryObjectPIDString, viewID).getBytes();
+            final byte recordData[] =
+                                        domsClient.getViewBundle(modifiedEntryObjectPIDString, viewID).getBytes();
 
             // Prepend the base name to the PID in order to make it possible
             // for the DOMSReadableStorage.getRecord() methods to figure out
@@ -485,7 +492,7 @@ import java.util.TreeSet;
         } catch (ServerOperationFailed serverOperationFailed) {
 
             final String errorMessage = "Failed retrieving record "
-                    + "(startTime = " + startTimeStamp + " viewID = "
+                    + "(viewID = "
                     + baseConfiguration.getViewID()
                     + ") from collection (PID = "
                     + baseConfiguration.getCollectionPID() + ").";

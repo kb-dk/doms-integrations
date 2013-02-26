@@ -29,30 +29,34 @@ package dk.statsbiblioteket.doms.integration.summa;
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
-class BaseState {
+public class BaseState {
 
-    private long nextRecordDescriptionIndex;
+    private long nextStartTime;
 
     private long currentRecordDescriptionCount;
 
+    private boolean reachedEnd;
+
+
     BaseState() {
-        setNextRecordDescriptionIndex(0);
+        setNextStartTime(-1);
         setCurrentRecordDescriptionCount(0);
+        reachedEnd = false;
     }
 
     /**
-     * @param nextRecordDescriptionIndex
-     *            the nextRecordDescriptionIndex to set
+     * @param nextStartTime
+     *            the nextStartTime to set
      */
-    public void setNextRecordDescriptionIndex(long nextRecordDescriptionIndex) {
-        this.nextRecordDescriptionIndex = nextRecordDescriptionIndex;
+    public void setNextStartTime(long nextStartTime) {
+        this.nextStartTime = nextStartTime;
     }
 
     /**
-     * @return the nextRecordDescriptionIndex
+     * @return the nextStartTime
      */
-    public long getNextRecordDescriptionIndex() {
-        return nextRecordDescriptionIndex;
+    public long getNextStartTime() {
+        return nextStartTime;
     }
 
     /**
@@ -71,4 +75,12 @@ class BaseState {
         return currentRecordDescriptionCount;
     }
 
+
+    public boolean isReachedEnd() {
+        return reachedEnd;
+    }
+
+    public void setReachedEnd(boolean reachedEnd) {
+        this.reachedEnd = reachedEnd;
+    }
 }

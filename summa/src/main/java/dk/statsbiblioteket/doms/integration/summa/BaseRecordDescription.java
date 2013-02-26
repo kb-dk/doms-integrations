@@ -32,7 +32,7 @@ import dk.statsbiblioteket.doms.central.RecordDescription;
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
-class BaseRecordDescription implements Comparable<BaseRecordDescription> {
+public class BaseRecordDescription implements Comparable<BaseRecordDescription> {
 
     private final RecordDescription recordDescription;
     private final String summaBaseID;
