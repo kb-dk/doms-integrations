@@ -10,7 +10,7 @@
         </entry>
         <entry>
             <key>DOMSWebserviceURL</key>
-            <value class="string">http://alhena:7480/centralWebservice-service/central/?wsdl
+            <value class="string">http://alhena:7880/centralWebservice-service/central/?wsdl
             </value>
         </entry>
         <entry>
