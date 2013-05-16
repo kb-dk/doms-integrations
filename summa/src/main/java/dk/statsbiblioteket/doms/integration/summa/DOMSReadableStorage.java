@@ -76,6 +76,11 @@ public class DOMSReadableStorage implements Storage {
     static final String RECORD_ID_DELIMITER = ":";
 
     /**
+     * By default, allow 100 megabytes per record iterator.
+     */
+    private static final int DEFAULT_MAX_SIZE_PER_RETRIEVAL = 100*1024*1024;
+
+    /**
      * The client, connected to the DOMS server specified by the configuration,
      * to retrieve objects from.
      */
@@ -92,7 +97,7 @@ public class DOMSReadableStorage implements Storage {
      * A registry containing all record iterators instantiated by methods
      * returning a key associated with an iterator over their result sets.
      */
-    private final SelfCleaningObjectRegistry<Iterator<Record>> recordIterators;
+    private final SelfCleaningObjectRegistry<SummaRecordIterator> recordIterators;
 
     /**
      * Create a <code>DOMSReadableStorage</code> instance based on the
@@ -111,8 +116,7 @@ public class DOMSReadableStorage implements Storage {
             throws ConfigurationException {
 
         baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
-        recordIterators = new SelfCleaningObjectRegistry<Iterator<Record>>(
-                THREE_HOURS);
+        recordIterators = new SelfCleaningObjectRegistry<SummaRecordIterator>(THREE_HOURS);
 
         initBaseConfigurations(configuration, baseConfigurations);
         domsClient = domsWSClient;
@@ -228,7 +232,7 @@ public class DOMSReadableStorage implements Storage {
                 iteratorBaseIDs = baseConfigurations.keySet();
             }
 
-            final Iterator<Record> recordIterator = new SummaRecordIterator(
+            final SummaRecordIterator recordIterator = new SummaRecordIterator(
                     domsClient, baseConfigurations, iteratorBaseIDs, timeStamp,
                     options);
 
@@ -260,7 +264,7 @@ public class DOMSReadableStorage implements Storage {
         }
 
         try {
-            final Iterator<Record> recordIterator = recordIterators
+            final SummaRecordIterator recordIterator = recordIterators
                     .get(iteratorKey);
 
             if (recordIterator.hasNext() == false) {
@@ -277,9 +281,13 @@ public class DOMSReadableStorage implements Storage {
 
             final List<Record> resultList = new LinkedList<Record>();
             int recordCounter = 0;
-            while (recordIterator.hasNext() && recordCounter < maxRecords) {
-                resultList.add(recordIterator.next());
+            int size = 0;
+            while (recordIterator.hasNext() && recordCounter < maxRecords && size < baseConfigurations.get(recordIterator.getCurrentBaseRecordDescription().getSummaBaseID()).getMaxSizePerRetrieval()) {
+                Record record = recordIterator.next();
+                resultList.add(record);
                 recordCounter++;
+                size += record.getContent().length;
+
             }
 
             if (log.isDebugEnabled()) {
@@ -611,8 +619,11 @@ public class DOMSReadableStorage implements Storage {
                 final long recordCountPerRetrieval = subConfiguration
                         .getLong(ConfigurationKeys.OBJECT_COUNT_PER_RETRIEVAL, 10000);
 
+                final long maxSizePerRetrieval = subConfiguration.getLong(ConfigurationKeys.MAX_SIZE_PER_RETRIEVAL,
+                                                              DEFAULT_MAX_SIZE_PER_RETRIEVAL);
+
                 BaseDOMSConfiguration newBaseConfig = new BaseDOMSConfiguration(
-                        collectionPID, viewID, objectState, recordCountPerRetrieval);
+                        collectionPID, viewID, objectState, recordCountPerRetrieval, maxSizePerRetrieval);
 
                 previousConfig = baseConfigurationsMap.put(baseID,
                         newBaseConfig);

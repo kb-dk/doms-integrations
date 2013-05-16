@@ -281,8 +281,7 @@ class SummaRecordIterator implements Iterator<Record> {
         }
 
         if (updates){
-            log.info("fillCache(): Successfully updated the cache for "
-                    + baseStates.keySet().size() + " base IDs.");
+            log.info("fillCache(): Successfully updated the cache for " + baseStates.keySet().size() + " base IDs.");
         }
     }
 
@@ -354,10 +353,9 @@ class SummaRecordIterator implements Iterator<Record> {
             final long currentCount = summaBaseState
                     .getCurrentRecordDescriptionCount();
             if (currentCount != 0) {
-                log.debug("fetchBaseRecordDescriptions(String): The cache"
-                        + " size for this base ID (" + summaBaseID
-                        + ") was non-zero (actual size = " + currentCount
-                        + ") when this re-fill was requested.");
+                log.debug("fetchBaseRecordDescriptions(String): The cache" + " size for this base ID (" + summaBaseID
+                                  + ") was non-zero (actual size = " + currentCount
+                                  + ") when this re-fill was requested.");
             }
             // The current count is supposed to be zero, however, use
             // addition to avoid any errors.
@@ -499,5 +497,9 @@ class SummaRecordIterator implements Iterator<Record> {
             log.warn("buildRecord(): " + errorMessage, serverOperationFailed);
             throw serverOperationFailed;
         }
+    }
+
+    BaseRecordDescription getCurrentBaseRecordDescription() {
+        return baseRecordDescriptions.first();
     }
 }

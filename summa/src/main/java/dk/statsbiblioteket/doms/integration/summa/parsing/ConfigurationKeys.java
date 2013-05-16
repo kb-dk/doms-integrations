@@ -69,6 +69,19 @@ public class ConfigurationKeys {
      * Key for the DOMS web service end-point element in the root configuration.
      */
     public static final String DOMS_API_WEBSERVICE_URL = "DOMSWebserviceURL";
+
+    /**
+     * The state of objects. Valid values are "Published", "InProgress" and "NotDeleted".
+     */
     public static final String OBJECT_STATE = "State";
+
+    /**
+     * The number of object descriptions requested per query to DOMS.
+     */
     public static final String OBJECT_COUNT_PER_RETRIEVAL = "ObjectCountPerRetrieval";
+
+    /**
+     * The maximum size in bytes of a bundle returned to Summa in a single call (+ overhead)
+     */
+    public static final String MAX_SIZE_PER_RETRIEVAL = "MaxSizePerRetrieval";
 }

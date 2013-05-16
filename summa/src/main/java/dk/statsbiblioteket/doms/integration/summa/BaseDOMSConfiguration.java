@@ -60,6 +60,8 @@ public class BaseDOMSConfiguration {
      */
     private final long recordCountPerRetrieval;
 
+    private final long maxSizePerRetrieval;
+
     public String getObjectState() {
         return objectState;
     }
@@ -73,12 +75,15 @@ public class BaseDOMSConfiguration {
      * @param viewID
      * @param objectState
      * @param recordCountPerRetrieval
+     * @param maxSizePerRetrieval
      */
-    public BaseDOMSConfiguration(URI collectionPID, String viewID, String objectState, long recordCountPerRetrieval) {
+    public BaseDOMSConfiguration(URI collectionPID, String viewID, String objectState, long recordCountPerRetrieval,
+                                 long maxSizePerRetrieval) {
         this.collectionPID = collectionPID;
         this.viewID = viewID;
         this.objectState = objectState;
         this.recordCountPerRetrieval = recordCountPerRetrieval;
+        this.maxSizePerRetrieval = maxSizePerRetrieval;
     }
 
     /**
@@ -100,7 +105,6 @@ public class BaseDOMSConfiguration {
         return viewID;
     }
 
-
     /**
      * Get the number of records to retrieve.
      *
@@ -108,6 +112,15 @@ public class BaseDOMSConfiguration {
      */
     public long getRecordCountPerRetrieval() {
         return recordCountPerRetrieval;
+    }
+
+    /**
+     * Maximum size in bytes for one record iterator.
+     *
+     * @return The size.
+     */
+    public long getMaxSizePerRetrieval() {
+        return maxSizePerRetrieval;
     }
 
     /* (non-Javadoc)
