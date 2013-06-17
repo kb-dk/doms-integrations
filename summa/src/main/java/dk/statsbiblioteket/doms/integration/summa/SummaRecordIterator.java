@@ -42,8 +42,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.TreeSet;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
@@ -65,7 +65,7 @@ class SummaRecordIterator implements Iterator<Record> {
     @SuppressWarnings("unused")
     private final QueryOptions queryOptions;
 
-    private final TreeSet<BaseRecordDescription> baseRecordDescriptions;
+    private final PriorityQueue<BaseRecordDescription> baseRecordDescriptions;
     private final Map<String, BaseState> baseStates;
 
     SummaRecordIterator(DomsWSClient domsClient,
@@ -76,7 +76,7 @@ class SummaRecordIterator implements Iterator<Record> {
         this.baseConfigurations = baseConfigurations;
         startTimeStamp = timeStamp;
         queryOptions = options;
-        baseRecordDescriptions = new TreeSet<BaseRecordDescription>();
+        baseRecordDescriptions = new PriorityQueue<BaseRecordDescription>();
         baseStates = createBaseStatesMap(summaBaseIDs);
     }
 
@@ -168,7 +168,7 @@ class SummaRecordIterator implements Iterator<Record> {
         }
 
         final BaseRecordDescription baseRecordDescription = baseRecordDescriptions
-                .pollFirst();
+                .poll();
 
         final String summaBaseID = baseRecordDescription.getSummaBaseID();
         final BaseState summaBaseState = baseStates.get(summaBaseID);
@@ -500,6 +500,6 @@ class SummaRecordIterator implements Iterator<Record> {
     }
 
     BaseRecordDescription getCurrentBaseRecordDescription() {
-        return baseRecordDescriptions.first();
+        return baseRecordDescriptions.peek();
     }
 }
