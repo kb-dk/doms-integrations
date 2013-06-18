@@ -22,6 +22,12 @@
             <directory>src/main/resources</directory>
         </fileSet>
     </fileSets>
+    <files>
+        <file>
+            <source>CHANGELOG</source>
+            <outputDirectory></outputDirectory>
+        </file>
+    </files>
 
 
 </assembly>
