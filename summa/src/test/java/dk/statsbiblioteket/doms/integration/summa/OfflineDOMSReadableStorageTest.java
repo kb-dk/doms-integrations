@@ -1,6 +1,7 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 
+import dk.statsbiblioteket.doms.integration.summa.exceptions.UnknownKeyException;
 import dk.statsbiblioteket.doms.integration.summa.parsing.ConfigurationKeys;
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
@@ -18,13 +19,6 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-/**
- * Created by IntelliJ IDEA.
- * User: eab
- * Date: 4/29/11
- * Time: 12:57 PM
- * To change this template use File | Settings | File Templates.
- */
 public class OfflineDOMSReadableStorageTest {
 
 
@@ -44,6 +38,32 @@ public class OfflineDOMSReadableStorageTest {
     public void setUp() throws URISyntaxException {
         testConfiguration = Configuration.load(new File(Thread.currentThread().getContextClassLoader().getResource("radioTVTestConfiguration.xml").toURI()).getAbsolutePath());
         storage = new DOMSReadableStorage(testConfiguration, new OfflineDOMSWSClient());
+    }
+
+    @Test
+    public void testIteratorTimeoutConfigrationRead() throws IOException, InterruptedException {
+        // Test value read from configuration
+        assertEquals("Configuration should be set to 24 hours in configuration",
+                     24 * 60 * 60 * 1000, testConfiguration.getLong(ConfigurationKeys.ITERATOR_KEY_TIMEOUT));
+
+        // Set value to something low
+        testConfiguration.set(ConfigurationKeys.ITERATOR_KEY_TIMEOUT, 100L);
+        storage = new DOMSReadableStorage(testConfiguration, new OfflineDOMSWSClient());
+
+        // Test it times out
+        long timeStamp = 0l;
+        String summaBaseID = "doms_radioTVCollection";
+        QueryOptions options = null;
+        long iterKey = storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
+                options);
+        storage.next(iterKey);
+        Thread.sleep(110L);
+        try {
+            storage.next(iterKey);
+            fail("Iterator key should have expired");
+        } catch (IllegalArgumentException e) {
+            assertEquals(UnknownKeyException.class, e.getCause().getClass());
+        }
     }
 
     @Test(expected = IllegalArgumentException.class)

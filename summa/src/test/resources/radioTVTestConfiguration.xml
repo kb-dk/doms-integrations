@@ -17,7 +17,10 @@
             <key>ObjectCountPerRetrieval</key>
             <value class="int">100</value>
         </entry>
-
+        <entry>
+            <key>iteratorKeyTimeout</key>
+            <value class="long">86400000</value>
+        </entry>
 
 
         <!-- Currently working example entry. -->

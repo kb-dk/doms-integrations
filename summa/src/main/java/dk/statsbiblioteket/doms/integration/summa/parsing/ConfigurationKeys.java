@@ -34,6 +34,10 @@ package dk.statsbiblioteket.doms.integration.summa.parsing;
  *@author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class ConfigurationKeys {
+    /**
+     * Key for timeout of iterators.
+     */
+    public static final String ITERATOR_KEY_TIMEOUT = "iteratorKeyTimeout";
 
     /**
      * Key for the list of base declarations.

@@ -67,7 +67,7 @@ public class DOMSReadableStorage implements Storage {
      * Three hours in milliseconds. This is the expiration time for the iterator
      * keys returned by this storage.
      */
-    private static final long THREE_HOURS = 10800000;
+    private static final long TWELVE_HOURS = 12 * 60 * 60 * 1000;
 
     /**
      * The delimiter inserted between the Summa base name and the DOMS object
@@ -116,9 +116,11 @@ public class DOMSReadableStorage implements Storage {
             throws ConfigurationException {
 
         baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
-        recordIterators = new SelfCleaningObjectRegistry<SummaRecordIterator>(THREE_HOURS);
-
         initBaseConfigurations(configuration, baseConfigurations);
+
+        long timeout = configuration.getLong(ConfigurationKeys.ITERATOR_KEY_TIMEOUT, TWELVE_HOURS);
+        recordIterators = new SelfCleaningObjectRegistry<SummaRecordIterator>(timeout);
+
         domsClient = domsWSClient;
         setDomsClientCredentials(configuration);
     }
