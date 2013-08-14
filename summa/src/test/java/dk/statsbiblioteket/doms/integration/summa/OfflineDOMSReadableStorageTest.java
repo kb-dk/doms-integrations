@@ -1,5 +1,8 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
+import org.apache.commons.lang.NotImplementedException;
+import org.junit.Before;
+import org.junit.Test;
 
 import dk.statsbiblioteket.doms.integration.summa.exceptions.UnknownKeyException;
 import dk.statsbiblioteket.doms.integration.summa.parsing.ConfigurationKeys;
@@ -7,9 +10,6 @@ import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.common.configuration.SubConfigurationsNotSupportedException;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
-import org.apache.commons.lang.NotImplementedException;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +17,12 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class OfflineDOMSReadableStorageTest {
 
@@ -101,69 +106,48 @@ public class OfflineDOMSReadableStorageTest {
 
 
     @Test
-    public void testGetModificationTime(){
-        try {
+    public void testGetModificationTime() throws SubConfigurationsNotSupportedException, IOException {
             final String baseID = getFirstBaseID(testConfiguration);
 
-            assertFalse(
-                    "The latest modification time of the collection (base='"
-                            + baseID + "') was implausible old.", storage
-                            .getModificationTime(baseID) < 0);
-
-        } catch (Exception ex){
-            System.out.print(ex);
-        }
+        assertFalse(
+                "The latest modification time of the collection (base='"
+                        + baseID + "') was implausible old.", storage
+                        .getModificationTime(baseID) < 0);
     }
 
     @Test
-    public void testGetModificationTimeIDNull(){
+    public void testGetModificationTimeIDNull() throws IOException {
         String baseID = null;
-        try {
         assertTrue("The latest modification time of the collection (base='"
                             + baseID + "') was implausible old.", storage
                             .getModificationTime(baseID) == 0);
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
     }
 
     @Test
-    public void testGetRecordsModifiedAfterNoBaseIDNoOptions(){
+    public void testGetRecordsModifiedAfterNoBaseIDNoOptions() throws IOException {
         long timeStamp = 0l;
         String summaBaseID = null;
         QueryOptions options = null;
-        try {
-            assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
-                    options) >= 0);
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
+        assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
+                options) >= 0);
     }
 
     @Test
-    public void testGetRecordsModifiedAfterNowNoBaseIDNoOptions(){
+    public void testGetRecordsModifiedAfterNowNoBaseIDNoOptions() throws IOException {
         long timeStamp = System.currentTimeMillis();
         String summaBaseID = null;
         QueryOptions options = null;
-        try {
-            assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
-                    options) >= 0);
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
+        assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
+                options) >= 0);
     }
 
     @Test
-    public void  testGetRecordModifiedAfterNoOptions(){
+    public void  testGetRecordModifiedAfterNoOptions() throws IOException {
         long timeStamp = 0l;
         String summaBaseID = "doms_RadioTVCollection";
         QueryOptions options = null;
-        try {
-            assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
-                    options) >= 0);
-        } catch (Exception ex) {
-            System.out.print(ex);
-        }
+        assertTrue(storage.getRecordsModifiedAfter(timeStamp, summaBaseID,
+                options) >= 0);
     }
 
 
