@@ -289,6 +289,11 @@ public class DOMSReadableStorage implements Storage {
                 resultList.add(record);
                 recordCounter++;
                 size += record.getContent().length;
+                if (log.isTraceEnabled()) {
+                    log.trace("Size: " + size + ", maxSize: "
+                                      + baseConfigurations.get(recordIterator.getCurrentBaseRecordDescription()
+                                                                       .getSummaBaseID()).getMaxSizePerRetrieval());
+                }
 
             }
 
