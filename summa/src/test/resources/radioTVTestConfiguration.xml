@@ -19,6 +19,7 @@
         </entry>
         <entry>
             <key>iteratorKeyTimeout</key>
+            <!-- 24 hours in milliseconds -->
             <value class="long">86400000</value>
         </entry>
 
