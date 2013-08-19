@@ -1,4 +1,12 @@
-0.0.9 
+0.0.10
+* Make iterator timeouts configurable, and increase default from 3 to 12 hours
+
+6bb0c31 2013-08-19 15:32:46 +0200       Kåre Fiedler Christiansen       Add comment in configuration to translate the milliseconds to a human readable timespan
+ede6ec6 2013-08-14 14:35:03 +0200       Kåre Fiedler Christiansen       Add trace logging to enable debugging of large objects
+567a14c 2013-08-14 14:34:33 +0200       Kåre Fiedler Christiansen       Make unit tests fail on unexpected exceptions, rather than print exception and succeed
+918be11 2013-08-14 14:33:09 +0200       Kåre Fiedler Christiansen       Make iterator timeout configurable, and increase default timeout from 3 to 12 hours
+
+0.0.9
 Start of changelog
 
 * Fix bug: Harvests end incomplete
