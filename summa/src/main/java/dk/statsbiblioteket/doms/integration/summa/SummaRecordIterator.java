@@ -65,6 +65,7 @@ class SummaRecordIterator implements Iterator<Record> {
     @SuppressWarnings("unused")
     private final QueryOptions queryOptions;
 
+    //TODO: These have to agree on data, this is brittle. Move the baseRecordDescriptions into baseState
     private final PriorityQueue<BaseRecordDescription> baseRecordDescriptions;
     private final Map<String, BaseState> baseStates;
 

@@ -70,6 +70,7 @@ public class BaseRecordDescription implements Comparable<BaseRecordDescription> 
         if (timeDiff != 0) {
             return (timeDiff < 0) ? -1 : 1;
         } else {
+            //TODO: Make consistent with equals, also compare on RecordDescription
             return getSummaBaseID().compareTo(other.getSummaBaseID());
         }
     }
