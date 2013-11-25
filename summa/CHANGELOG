@@ -1,3 +1,7 @@
+1.0
+Updated to 1.0 doms parent pom
+Updated to 1.0 doms client
+
 0.0.10
 * Make iterator timeouts configurable, and increase default from 3 to 12 hours
 
