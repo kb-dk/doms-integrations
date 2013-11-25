@@ -36,7 +36,7 @@
             <dependency>
                 <groupId>dk.statsbiblioteket.doms.client</groupId>
                 <artifactId>domsClient</artifactId>
-                <version>0.0.14</version>
+                <version>1.0</version>
             </dependency>
             <dependency>
                 <groupId>dk.statsbiblioteket.summa</groupId>
