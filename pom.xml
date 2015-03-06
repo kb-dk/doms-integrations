@@ -3,7 +3,7 @@
     <parent>
         <groupId>dk.statsbiblioteket.doms</groupId>
         <artifactId>doms</artifactId>
-        <version>1.0</version>
+        <version>1.1</version>
     </parent>
 
     <groupId>dk.statsbiblioteket.doms.summa</groupId>
@@ -36,12 +36,12 @@
             <dependency>
                 <groupId>dk.statsbiblioteket.doms.client</groupId>
                 <artifactId>domsClient</artifactId>
-                <version>1.0</version>
+                <version>1.2-SNAPSHOT</version>
             </dependency>
             <dependency>
                 <groupId>dk.statsbiblioteket.summa</groupId>
                 <artifactId>summa-core</artifactId>
-                <version>2.0.0-20130128</version>
+                <version>2.2.0-20140903</version>
                 <scope>provided</scope>
             </dependency>
             <dependency>
@@ -59,4 +59,34 @@
         </dependencies>
 
     </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <debug>true</debug>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.9</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+        </plugins>
+    </build>
 </project>
