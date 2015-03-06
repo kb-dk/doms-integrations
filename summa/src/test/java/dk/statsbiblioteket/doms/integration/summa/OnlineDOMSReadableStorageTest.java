@@ -25,6 +25,7 @@ import static org.junit.Assert.*;
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
+@Ignore("Runs against remote servers, which do not work")
 public class OnlineDOMSReadableStorageTest {
 
 

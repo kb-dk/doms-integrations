@@ -27,6 +27,7 @@ import static org.junit.Assert.*;
  * This test requires a running doms system to connect to, at the location specified in the config file
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
+@Ignore("Runs against remote servers, which do not work")
 public class DOMSReadableStorageTest {
 
 
@@ -43,7 +44,7 @@ public class DOMSReadableStorageTest {
     private final Configuration testConfiguration;
 
     public DOMSReadableStorageTest() throws URISyntaxException {
-        testConfiguration = Configuration.load(new File(Thread.currentThread().getContextClassLoader().getResource("radioTVTestConfiguration.xml").toURI()).getAbsolutePath());
+        testConfiguration = Configuration.load(new File(Thread.currentThread().getContextClassLoader().getResource("NewspaprTestConfiguration.xml").toURI()).getAbsolutePath());
 
 
     }
