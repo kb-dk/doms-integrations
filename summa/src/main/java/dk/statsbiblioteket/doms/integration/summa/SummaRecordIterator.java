@@ -375,7 +375,7 @@ class SummaRecordIterator implements Iterator<Record> {
         }
         log.info("fetchBaseRecordDescriptions(String): Returning "
                 + "after adding " + retrievedRecordDescriptions.size()
-                + " record decscriptions to the cache for the Summa"
+                + " record descriptions to the cache for the Summa"
                 + " base ID: " + summaBaseID);
 
     }
