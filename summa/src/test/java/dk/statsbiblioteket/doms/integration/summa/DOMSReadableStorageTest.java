@@ -229,7 +229,6 @@ public class DOMSReadableStorageTest {
      * contain some objects in order to make this test run successfully.
      */
     @Test
-    @Ignore
     public void testNextLongInt() {
 
         try {
@@ -291,7 +290,6 @@ public class DOMSReadableStorageTest {
      * contain some objects in order to make this test run successfully.
      */
     @Test
-    @Ignore
     public void testNextLong() {
         try {
             // Get an iterator over all modified records.
