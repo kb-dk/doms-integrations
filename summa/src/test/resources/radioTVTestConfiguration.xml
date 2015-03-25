@@ -10,7 +10,7 @@
         </entry>
         <entry>
             <key>DOMSWebserviceURL</key>
-            <value class="string">http://alhena.statsbiblioteket.dk:7980/centralWebservice-service/central/?wsdl
+            <value class="string">http://localhost:7880/centralWebservice-service/central/?wsdl
             </value>
         </entry>
         <entry>
@@ -39,15 +39,15 @@
                     </entry>
                     <entry>
                         <key>viewID</key>
-                        <value class="string">SummaVisible</value>
+                        <value class="string">GUI</value>
                     </entry>
                     <entry>
                         <key>State</key>
-                        <value class="string">Published</value>
+                        <value class="string">Inactive</value>
                     </entry>
 
                 </xproperties>
-                <xproperties>
+             <xproperties>
                     <entry>
                         <key>collectionBaseID</key>
                         <value class="string">doms_reklameCollection</value>
