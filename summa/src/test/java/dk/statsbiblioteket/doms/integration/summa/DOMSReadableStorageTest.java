@@ -44,7 +44,7 @@ public class DOMSReadableStorageTest {
     private final Configuration testConfiguration;
 
     public DOMSReadableStorageTest() throws URISyntaxException {
-        testConfiguration = Configuration.load(new File(Thread.currentThread().getContextClassLoader().getResource("NewspaprTestConfiguration.xml").toURI()).getAbsolutePath());
+        testConfiguration = Configuration.load(new File(Thread.currentThread().getContextClassLoader().getResource("radioTVTestConfiguration.xml").toURI()).getAbsolutePath());
 
 
     }
@@ -308,6 +308,9 @@ public class DOMSReadableStorageTest {
                     // validate it
                     // anyway.
                     assertNotNull(storage.next(iteratorKey));
+                    if (i % 100 == 0){
+                        System.out.println(i);
+                    }
                 }
 
                 fail("The iterator (key = " + iteratorKey
