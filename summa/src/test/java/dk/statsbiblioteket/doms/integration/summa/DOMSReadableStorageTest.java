@@ -27,7 +27,7 @@ import static org.junit.Assert.*;
  * This test requires a running doms system to connect to, at the location specified in the config file
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
-@Ignore("Runs against remote servers, which do not work")
+@Ignore("These tests require a standard doms installer vagrant to work")
 public class DOMSReadableStorageTest {
 
 
