@@ -54,7 +54,7 @@ public class SelfCleaningObjectRegistry<T> {
      */
     public SelfCleaningObjectRegistry(long objectExpirationTimeMillis) {
 
-        objectsByKey = new TimeSensitiveCache<Long, T>(
+        objectsByKey = new TimeSensitiveCache<>(
                 objectExpirationTimeMillis, true);
     }
 

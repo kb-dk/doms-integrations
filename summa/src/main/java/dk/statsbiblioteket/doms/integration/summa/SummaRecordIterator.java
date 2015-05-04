@@ -86,7 +86,7 @@ class SummaRecordIterator implements Iterator<Record> {
         startTimeStamp = timeStamp;
         queryOptions = options;
         this.threadPool = threadPool;
-        baseRecordDescriptions = new PriorityQueue<BaseRecordDescription>();
+        baseRecordDescriptions = new PriorityQueue<>();
         baseStates = createBaseStatesMap(summaBaseIDs);
     }
 
@@ -256,7 +256,7 @@ class SummaRecordIterator implements Iterator<Record> {
         if (log.isTraceEnabled()) {
             log.trace("createBaseStatesMap(Set<String>): Entering.");
         }
-        Map<String, BaseState> baseStates = new HashMap<String, BaseState>();
+        Map<String, BaseState> baseStates = new HashMap<>();
         for (String baseID : baseIDs) {
             baseStates.put(baseID, new BaseState());
         }
@@ -334,7 +334,7 @@ class SummaRecordIterator implements Iterator<Record> {
 
         final String objectState = baseConfiguration.getObjectState();
 
-        List<RecordDescription> retrievedRecordDescriptions = new LinkedList<RecordDescription>();
+        List<RecordDescription> retrievedRecordDescriptions = new LinkedList<>();
         final BaseState summaBaseState = baseStates.get(summaBaseID);
 
         long startTime = summaBaseState.getNextStartTime();
@@ -487,7 +487,7 @@ class SummaRecordIterator implements Iterator<Record> {
             // what view to use when they are invoked. It's ugly, but hey!
             // That's life....
             final String recordID = summaBaseID + DOMSReadableStorage.RECORD_ID_DELIMITER +
-                                    modifiedEntryObjectPIDString.toString();
+                                    modifiedEntryObjectPIDString;
             final Record newRecord;
             if (recordDescription.getState().equalsIgnoreCase("D")){
                 newRecord = new Record(recordID, summaBaseID, new byte[0]);

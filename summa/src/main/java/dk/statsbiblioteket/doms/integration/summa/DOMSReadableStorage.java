@@ -119,11 +119,11 @@ public class DOMSReadableStorage implements Storage {
     public DOMSReadableStorage(Configuration configuration, DomsWSClient domsWSClient)
             throws ConfigurationException {
 
-        baseConfigurations = new HashMap<String, BaseDOMSConfiguration>();
+        baseConfigurations = new HashMap<>();
         initBaseConfigurations(configuration, baseConfigurations);
 
         long timeout = configuration.getLong(ConfigurationKeys.ITERATOR_KEY_TIMEOUT, TWELVE_HOURS);
-        recordIterators = new SelfCleaningObjectRegistry<SummaRecordIterator>(timeout);
+        recordIterators = new SelfCleaningObjectRegistry<>(timeout);
 
         domsClient = domsWSClient;
         setDomsClientCredentials(configuration);
@@ -251,9 +251,9 @@ public class DOMSReadableStorage implements Storage {
         // FIXME! Add proper query options handling.
 
         try {
-            Set<String> iteratorBaseIDs = null;
+            Set<String> iteratorBaseIDs;
             if (summaBaseID != null) {
-                iteratorBaseIDs = new LinkedHashSet<String>();
+                iteratorBaseIDs = new LinkedHashSet<>();
                 iteratorBaseIDs.add(summaBaseID);
             } else {
                 iteratorBaseIDs = baseConfigurations.keySet();
@@ -469,7 +469,7 @@ public class DOMSReadableStorage implements Storage {
                     + options);
         }
 
-        List<Record> resultList = new LinkedList<Record>();
+        List<Record> resultList = new LinkedList<>();
         for (String recordID : summaRecordIDs) {
             resultList.add(getRecord(recordID, options));
         }
@@ -535,7 +535,6 @@ public class DOMSReadableStorage implements Storage {
      *
      * @param configuration
      *            a <code>DOMSReadableStorage</code> configuration object.
-     * @return a reference to the <code>DOMSReadableStorage</code> instance.
      * @throws ConfigurationException
      *             if the configuration contains any illegal values or
      *             structures.
