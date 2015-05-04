@@ -119,37 +119,11 @@ class SummaRecordIterator implements Iterator<Record> {
      * @see java.util.Iterator#next()
      */
     public Record next() {
-        if (log.isTraceEnabled()) {
-            log.trace("next(): Entering.");
+        final List<Record> next = next(1, Long.MAX_VALUE);
+        if (next.isEmpty()){
+            throw new NoSuchElementException("Iterator is out of records");
         }
-
-        // The hasNext() method will ensure that the BaseRecordDescription cache
-        // is re-filled if necessary/possible.
-        if (!hasNext()) {
-            throw new NoSuchElementException();
-        }
-
-        // Get the next RecordDescription from the cache.
-        final BaseRecordDescription baseRecordDescription = getNextBaseRecordDescription();
-        try {
-            // Build a Record and return it.
-            final Record nextRecord = buildRecord(baseRecordDescription);
-
-            if (log.isTraceEnabled()) {
-                log.trace("next(): Returning record: " + nextRecord);
-            }
-            return nextRecord;
-        } catch (ServerOperationFailed serverOperationFailed) {
-            // The Record could not be built due to a communication/server
-            // error. Push back the BaseRecordDescription and hope for success
-            // later.
-
-            pushBackBaseRecordDescription(baseRecordDescription);
-            throw new DOMSCommunicationError(
-                    "next() operation failed for base ID: "
-                            + baseRecordDescription.getSummaBaseID(),
-                    serverOperationFailed);
-        }
+        return next.get(0);
     }
 
     /**
