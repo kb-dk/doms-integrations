@@ -55,6 +55,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 /**
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
@@ -98,6 +101,7 @@ public class DOMSReadableStorage implements Storage {
      * returning a key associated with an iterator over their result sets.
      */
     private final SelfCleaningObjectRegistry<SummaRecordIterator> recordIterators;
+    private final ExecutorService threadPool;
 
     /**
      * Create a <code>DOMSReadableStorage</code> instance based on the
@@ -123,6 +127,27 @@ public class DOMSReadableStorage implements Storage {
 
         domsClient = domsWSClient;
         setDomsClientCredentials(configuration);
+
+        threadPool = initialiseThreadPool(configuration.getInt(ConfigurationKeys.DOMS_RETRIEVAL_THREADCOUNT));
+
+    }
+
+    private ExecutorService initialiseThreadPool(Integer viewBundleThreadCount) {
+        final ThreadFactory threadFactory = new ThreadFactory() {
+            @Override //Hack to make the threads daemon threads so they do not block shutdown
+            public Thread newThread(Runnable r) {
+                ThreadFactory fac = Executors.defaultThreadFactory();
+                Thread thread = fac.newThread(r);
+                thread.setDaemon(true);
+                return thread;
+            }
+        };
+        //If thread count not correctly specified, make a cached thread pool (creates up to infinity threads as required, and kills them after 60 seconds of idle)
+        if (viewBundleThreadCount == null || viewBundleThreadCount <= 0) {
+            return Executors.newCachedThreadPool(threadFactory);
+        } else {
+            return Executors.newFixedThreadPool(viewBundleThreadCount, threadFactory);
+        }
     }
 
     /**
@@ -236,7 +261,7 @@ public class DOMSReadableStorage implements Storage {
 
             final SummaRecordIterator recordIterator = new SummaRecordIterator(
                     domsClient, baseConfigurations, iteratorBaseIDs, timeStamp,
-                    options);
+                    options, threadPool);
 
             final long iteratorKey = recordIterators.register(recordIterator);
 
@@ -482,8 +507,7 @@ public class DOMSReadableStorage implements Storage {
     }
 
     public void close() throws IOException {
-        log.warn("close(): Un-implemented method called.");
-        throw new NotImplementedException();
+        threadPool.shutdownNow();
     }
 
     public void clearBase(String base) throws IOException {

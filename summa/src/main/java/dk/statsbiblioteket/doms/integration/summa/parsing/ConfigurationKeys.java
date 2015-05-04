@@ -88,4 +88,8 @@ public class ConfigurationKeys {
      * The maximum size in bytes of a bundle returned to Summa in a single call (+ overhead)
      */
     public static final String MAX_SIZE_PER_RETRIEVAL = "MaxSizePerRetrieval";
+    /**
+     * The number of threads to use when retrieving records from DOMS
+     */
+    public static final java.lang.String DOMS_RETRIEVAL_THREADCOUNT = "DomsRetrievalThreadCount";
 }

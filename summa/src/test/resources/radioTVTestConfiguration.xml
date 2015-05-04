@@ -14,8 +14,8 @@
             </value>
         </entry>
         <entry>
-            <key>ObjectCountPerRetrieval</key>
-            <value class="int">100</value>
+            <key>DomsRetrievalThreadCount</key>
+            <value class="int">2</value>
         </entry>
         <entry>
             <key>iteratorKeyTimeout</key>

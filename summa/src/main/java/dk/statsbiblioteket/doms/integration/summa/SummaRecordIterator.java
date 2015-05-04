@@ -45,6 +45,10 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 
 /**
  * @author Asger Askov Blekinge
@@ -66,6 +70,7 @@ class SummaRecordIterator implements Iterator<Record> {
     // expect from it.
     @SuppressWarnings("unused")
     private final QueryOptions queryOptions;
+    private final ExecutorService threadPool;
 
     //TODO: These have to agree on data, this is brittle. Move the baseRecordDescriptions into baseState
     private final PriorityQueue<BaseRecordDescription> baseRecordDescriptions;
@@ -73,12 +78,14 @@ class SummaRecordIterator implements Iterator<Record> {
 
     SummaRecordIterator(DomsWSClient domsClient,
                         Map<String, BaseDOMSConfiguration> baseConfigurations,
-                        Set<String> summaBaseIDs, long timeStamp, QueryOptions options) {
+                        Set<String> summaBaseIDs, long timeStamp, QueryOptions options,
+                        ExecutorService threadPool) {
 
         this.domsClient = domsClient;
         this.baseConfigurations = baseConfigurations;
         startTimeStamp = timeStamp;
         queryOptions = options;
+        this.threadPool = threadPool;
         baseRecordDescriptions = new PriorityQueue<BaseRecordDescription>();
         baseStates = createBaseStatesMap(summaBaseIDs);
     }
@@ -514,12 +521,44 @@ class SummaRecordIterator implements Iterator<Record> {
      * @return a list, possible of length 0
      */
     public List<Record> next(int maxResults, long maxSizePerRetrieval) {
-        long resultSize = 0;
+        ArrayList<BaseRecordDescription> recordDescriptions = new ArrayList<>();
+        for (int i = 0; i < maxResults && hasNext(); i++) {
+            final BaseRecordDescription baseRecordDescription = getNextBaseRecordDescription();
+            recordDescriptions.add(baseRecordDescription);
+        }
+
+        ArrayList<Future<Record>> futureRecordList = new ArrayList<Future<Record>>(recordDescriptions.size());
+        for (final BaseRecordDescription recordDescription : recordDescriptions) {
+            Future<Record> futureRecord = threadPool.submit(new Callable<Record>() {
+                @Override
+                public Record call() throws Exception {
+                    return buildRecord(recordDescription);
+                }
+            });
+            futureRecordList.add(futureRecord);
+        }
+
+        long size = 0;
         ArrayList<Record> resultSet = new ArrayList<>();
-        for (int i = 0; i < maxResults && hasNext() && resultSize < maxSizePerRetrieval; i++) {
-            final Record record = next();
-            resultSet.add(record);
-            resultSize += record.getContent().length;
+        for (int i = 0; i < futureRecordList.size(); i++) {
+            Future<Record> recordFuture = futureRecordList.get(i);
+            try {
+                final Record record = recordFuture.get();
+                resultSet.add(record);
+                size += record.getContent().length;
+                if (size > maxSizePerRetrieval){
+                    for (int j = i+1; j < futureRecordList.size(); j++) {
+                        Future<Record> toCancel = futureRecordList.get(j);
+                        toCancel.cancel(true);
+                    }
+                    break;
+                }
+            } catch (InterruptedException | ExecutionException e) {
+                for (BaseRecordDescription recordDescription : recordDescriptions) {
+                    pushBackBaseRecordDescription(recordDescription);
+                }
+                throw new DOMSCommunicationError("Failed to retrieve record from doms",e);
+            }
         }
         return resultSet;
     }
