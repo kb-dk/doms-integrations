@@ -466,19 +466,20 @@ class SummaRecordIterator implements Iterator<Record> {
             final String modifiedEntryObjectPIDString = recordDescription
                     .getPid();
 
-            final byte recordData[] =
-                                        domsClient.getViewBundle(modifiedEntryObjectPIDString, viewID).getBytes();
-
             // Prepend the base name to the PID in order to make it possible
             // for the DOMSReadableStorage.getRecord() methods to figure out
             // what view to use when they are invoked. It's ugly, but hey!
             // That's life....
-            final String recordID = summaBaseID
-                    + DOMSReadableStorage.RECORD_ID_DELIMITER
-                    + modifiedEntryObjectPIDString.toString();
-
-            final Record newRecord = new Record(recordID, summaBaseID,
-                    recordData);
+            final String recordID = summaBaseID + DOMSReadableStorage.RECORD_ID_DELIMITER +
+                                    modifiedEntryObjectPIDString.toString();
+            final Record newRecord;
+            if (recordDescription.getState().equalsIgnoreCase("D")){
+                newRecord = new Record(recordID, summaBaseID, new byte[0]);
+                newRecord.setDeleted(true);
+            } else {
+                final byte recordData[] = domsClient.getViewBundle(modifiedEntryObjectPIDString, viewID).getBytes();
+                newRecord = new Record(recordID, summaBaseID, recordData);
+            }
             newRecord.setModificationTime(recordDescription.getDate());
             newRecord.setCreationTime(recordDescription.getDate());
 
