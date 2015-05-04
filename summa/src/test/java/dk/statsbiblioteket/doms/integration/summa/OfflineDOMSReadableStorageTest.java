@@ -183,12 +183,6 @@ public class OfflineDOMSReadableStorageTest {
     }
 
     @Test(expected = NotImplementedException.class)
-    public void testClose() throws IOException {
-        storage.close();
-        fail("Someone implemented the method, please update tests");
-    }
-
-    @Test(expected = NotImplementedException.class)
     public void testFlushAll() throws IOException {
         storage.flushAll(new ArrayList<Record>());
         fail("Someone implemented the method, please update tests");
