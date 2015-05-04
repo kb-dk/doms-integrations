@@ -58,7 +58,7 @@ public class BaseDOMSConfiguration {
     /**
      * The number of records to retrieve.
      */
-    private final long recordCountPerRetrieval;
+    private final int recordCountPerRetrieval;
 
     private final long maxSizePerRetrieval;
 
@@ -77,7 +77,7 @@ public class BaseDOMSConfiguration {
      * @param recordCountPerRetrieval
      * @param maxSizePerRetrieval
      */
-    public BaseDOMSConfiguration(URI collectionPID, String viewID, String objectState, long recordCountPerRetrieval,
+    public BaseDOMSConfiguration(URI collectionPID, String viewID, String objectState, int recordCountPerRetrieval,
                                  long maxSizePerRetrieval) {
         this.collectionPID = collectionPID;
         this.viewID = viewID;
