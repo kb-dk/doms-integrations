@@ -36,6 +36,7 @@ import dk.statsbiblioteket.doms.integration.summa.exceptions.DOMSCommunicationEr
 import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -46,6 +47,7 @@ import java.util.PriorityQueue;
 import java.util.Set;
 
 /**
+ * @author Asger Askov Blekinge
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 class SummaRecordIterator implements Iterator<Record> {
@@ -503,5 +505,22 @@ class SummaRecordIterator implements Iterator<Record> {
 
     BaseRecordDescription getCurrentBaseRecordDescription() {
         return baseRecordDescriptions.peek();
+    }
+
+    /**
+     * Shorthand for getting a list of records, rather than just one. If the iterator runs out, return an empty list
+     * @param maxResults the maximum length of the result list
+     * @param maxSizePerRetrieval the maximum memory usage of the result list
+     * @return a list, possible of length 0
+     */
+    public List<Record> next(int maxResults, long maxSizePerRetrieval) {
+        long resultSize = 0;
+        ArrayList<Record> resultSet = new ArrayList<>();
+        for (int i = 0; i < maxResults && hasNext() && resultSize < maxSizePerRetrieval; i++) {
+            final Record record = next();
+            resultSet.add(record);
+            resultSize += record.getContent().length;
+        }
+        return resultSet;
     }
 }

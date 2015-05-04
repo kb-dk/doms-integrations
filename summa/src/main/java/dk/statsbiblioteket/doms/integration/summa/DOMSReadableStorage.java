@@ -281,21 +281,14 @@ public class DOMSReadableStorage implements Storage {
                 throw new NoSuchElementException(errorMessage);
             }
 
-            final List<Record> resultList = new LinkedList<Record>();
-            int recordCounter = 0;
-            int size = 0;
-            while (recordIterator.hasNext() && recordCounter < maxRecords && size < baseConfigurations.get(recordIterator.getCurrentBaseRecordDescription().getSummaBaseID()).getMaxSizePerRetrieval()) {
-                Record record = recordIterator.next();
-                resultList.add(record);
-                recordCounter++;
-                size += record.getContent().length;
-                if (log.isTraceEnabled()) {
-                    log.trace("Size: " + size + ", maxSize: "
-                                      + baseConfigurations.get(recordIterator.getCurrentBaseRecordDescription()
-                                                                       .getSummaBaseID()).getMaxSizePerRetrieval());
-                }
+            final long maxSizePerRetrieval = baseConfigurations.get(
+                                                                          recordIterator
+                                                                                  .getCurrentBaseRecordDescription()
+                                                                                  .getSummaBaseID()
+                                                                  ).getMaxSizePerRetrieval();
+            List<Record> resultList
+                    = recordIterator.next(maxRecords, maxSizePerRetrieval);
 
-            }
 
             if (log.isDebugEnabled()) {
                 log.debug("next(long, int): Returning " + resultList.size()
@@ -623,11 +616,11 @@ public class DOMSReadableStorage implements Storage {
                 final String objectState = subConfiguration
                         .getString(ConfigurationKeys.OBJECT_STATE);
 
-                final long recordCountPerRetrieval = subConfiguration
-                        .getLong(ConfigurationKeys.OBJECT_COUNT_PER_RETRIEVAL, 10000);
+                final int recordCountPerRetrieval = subConfiguration
+                        .getInt(ConfigurationKeys.OBJECT_COUNT_PER_RETRIEVAL, 10000);
 
-                final long maxSizePerRetrieval = subConfiguration.getLong(ConfigurationKeys.MAX_SIZE_PER_RETRIEVAL,
-                                                              DEFAULT_MAX_SIZE_PER_RETRIEVAL);
+                final int maxSizePerRetrieval = subConfiguration.getInt(ConfigurationKeys.MAX_SIZE_PER_RETRIEVAL,
+                                                                        DEFAULT_MAX_SIZE_PER_RETRIEVAL);
 
                 BaseDOMSConfiguration newBaseConfig = new BaseDOMSConfiguration(
                         collectionPID, viewID, objectState, recordCountPerRetrieval, maxSizePerRetrieval);
