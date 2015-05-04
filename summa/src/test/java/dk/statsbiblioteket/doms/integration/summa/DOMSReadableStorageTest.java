@@ -237,35 +237,24 @@ public class DOMSReadableStorageTest {
             final long iteratorKey = storage.getRecordsModifiedAfter(
                     SINCE_ANCIENT_TIMES, baseID, null);
 
-            // Expect at least one element in the configured collection and get
-            // all elements.
-            assertFalse(storage.next(iteratorKey, Integer.MAX_VALUE).isEmpty());
+            List<Record> result = storage.next(iteratorKey, Integer.MAX_VALUE);
+            assertEquals(result.size(),4);
+            //There can only be these 4 due to the size restriction
 
+
+            result = storage.next(iteratorKey, Integer.MAX_VALUE);
+            assertEquals(result.size(),1);
+            //get the remaining object
+
+
+
+            // Expect that the iterator we just emptied has been removed
+            // from the storage.
             try {
-                // Verify that the iterator is depleted.
-                storage.next(iteratorKey, Integer.MAX_VALUE);
-
-                // Oops. the iterator was supposed to be depleted.
-                fail("The iterator (key = " + iteratorKey
-                        + ") was not empty nor deleted from the storage.");
-
-            } catch (IllegalArgumentException illegalArgumentException) {
+                storage.next(iteratorKey);
+                fail("The iterator was supposed to have run out and thrown noSuchElementException here");
+            } catch (NoSuchElementException e){
                 assertTrue(true);
-            } catch (NoSuchElementException noSuchElementException) {
-                // No more elements... that was just what we wanted.
-            }
-
-            try {
-                // Expect that the iterator we just emptied has been removed
-                // from the storage.
-                storage.next(iteratorKey, Integer.MAX_VALUE);
-            } catch (IllegalArgumentException illegalArgumentException) {
-                assertTrue(true);
-            } catch (NoSuchElementException noSuchElementException) {
-                // Oops. the iterator was supposed to be removed from the
-                // storage.
-                fail("The iterator (key = " + iteratorKey
-                        + ") was not deleted from the storage.");
             }
         } catch (Exception exception) {
             final ByteArrayOutputStream bos = new ByteArrayOutputStream();

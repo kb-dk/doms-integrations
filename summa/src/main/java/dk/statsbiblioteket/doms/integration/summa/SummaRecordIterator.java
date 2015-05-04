@@ -222,7 +222,14 @@ class SummaRecordIterator implements Iterator<Record> {
         baseRecordDescriptions.add(baseRecordDescription);
 
         final String summaBaseID = baseRecordDescription.getSummaBaseID();
-        final BaseState summaBaseState = baseStates.get(summaBaseID);
+        BaseState summaBaseState = baseStates.get(summaBaseID);
+        if (summaBaseState == null){
+            //If it is not in the baseStates map, this base state have been exhausted.
+            summaBaseState = new BaseState();
+            summaBaseState.setReachedEnd(true);
+            //recreate it here, but set reachedEnd, so that it will be collected again
+            baseStates.put(summaBaseID, summaBaseState);
+        }
 
         final long currentRecordDescriptionCount = summaBaseState
                 .getCurrentRecordDescriptionCount() + 1;
@@ -550,6 +557,7 @@ class SummaRecordIterator implements Iterator<Record> {
                     for (int j = i+1; j < futureRecordList.size(); j++) {
                         Future<Record> toCancel = futureRecordList.get(j);
                         toCancel.cancel(true);
+                        pushBackBaseRecordDescription(recordDescriptions.get(j));
                     }
                     break;
                 }
