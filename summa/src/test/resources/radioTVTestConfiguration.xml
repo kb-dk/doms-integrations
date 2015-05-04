@@ -30,6 +30,15 @@
             <value class="list">
                 <xproperties>
                     <entry>
+                        <key>ObjectCountPerRetrieval</key>
+                        <value class="int">100</value>
+                    </entry>
+                    <entry>
+                        <key>MaxSizePerRetrieval</key>
+                        <value class="long">15000</value>
+                    </entry>
+
+                    <entry>
                         <key>collectionBaseID</key>
                         <value class="string">doms_radioTVCollection</value>
                     </entry>
@@ -48,6 +57,14 @@
 
                 </xproperties>
              <xproperties>
+                 <entry>
+                     <key>ObjectCountPerRetrieval</key>
+                     <value class="int">100</value>
+                 </entry>
+                 <entry>
+                     <key>MaxSizePerRetrieval</key>
+                     <value class="long">104857600</value>
+                 </entry>
                     <entry>
                         <key>collectionBaseID</key>
                         <value class="string">doms_reklameCollection</value>
