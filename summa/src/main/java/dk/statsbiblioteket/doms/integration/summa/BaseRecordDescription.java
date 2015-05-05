@@ -30,6 +30,8 @@ package dk.statsbiblioteket.doms.integration.summa;
 import dk.statsbiblioteket.doms.central.RecordDescription;
 
 /**
+ * This is a record, as returned from the update tracker, associated with a specific Base.
+ * It does not contain the content of the record, only information enough to build the view bundle.
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class BaseRecordDescription implements Comparable<BaseRecordDescription> {

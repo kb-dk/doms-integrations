@@ -27,6 +27,7 @@
 package dk.statsbiblioteket.doms.integration.summa;
 
 /**
+ * This class tracks how far we have come in getting records from a Summa Base
  * @author Thomas Skou Hansen &lt;tsh@statsbiblioteket.dk&gt;
  */
 public class BaseState {
@@ -45,6 +46,7 @@ public class BaseState {
     }
 
     /**
+     * This is the start time to be used in the next update tracker query
      * @param nextStartTime
      *            the nextStartTime to set
      */
@@ -60,6 +62,8 @@ public class BaseState {
     }
 
     /**
+     * This is the number of records left in the current "retrieval", ie. how many we have before we must
+     * query the update tracker again
      * @param currentRecordDescriptionCount
      *            the currentRecordDescriptionCount to set
      */
@@ -75,7 +79,11 @@ public class BaseState {
         return currentRecordDescriptionCount;
     }
 
-
+    /**
+     * This boolean tracks if we have reached the end of records from the base, ie. if we should
+     * query doms/updatetracker for any more
+     * @return
+     */
     public boolean isReachedEnd() {
         return reachedEnd;
     }
