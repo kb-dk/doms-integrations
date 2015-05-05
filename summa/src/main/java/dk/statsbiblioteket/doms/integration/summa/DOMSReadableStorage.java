@@ -26,10 +26,6 @@
  */
 package dk.statsbiblioteket.doms.integration.summa;
 
-import org.apache.commons.lang.NotImplementedException;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 import dk.statsbiblioteket.doms.client.DomsWSClient;
 import dk.statsbiblioteket.doms.client.DomsWSClientImpl;
 import dk.statsbiblioteket.doms.client.exceptions.ServerOperationFailed;
@@ -42,13 +38,15 @@ import dk.statsbiblioteket.summa.common.Record;
 import dk.statsbiblioteket.summa.common.configuration.Configuration;
 import dk.statsbiblioteket.summa.storage.api.QueryOptions;
 import dk.statsbiblioteket.summa.storage.api.Storage;
+import org.apache.commons.lang.NotImplementedException;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -101,6 +99,11 @@ public class DOMSReadableStorage implements Storage {
      * returning a key associated with an iterator over their result sets.
      */
     private final SelfCleaningObjectRegistry<SummaRecordIterator> recordIterators;
+
+    /**
+     * The threadpool used when retrieving view bundles from doms. It allows us to retrieve multiple of these
+     * concurrently
+     */
     private final ExecutorService threadPool;
 
     /**
@@ -144,7 +147,7 @@ public class DOMSReadableStorage implements Storage {
         };
         //If thread count not correctly specified, make a cached thread pool (creates up to infinity threads as required, and kills them after 60 seconds of idle)
         if (viewBundleThreadCount == null || viewBundleThreadCount <= 0) {
-            return Executors.newCachedThreadPool(threadFactory);
+            return Executors.newSingleThreadExecutor(threadFactory);
         } else {
             return Executors.newFixedThreadPool(viewBundleThreadCount, threadFactory);
         }
