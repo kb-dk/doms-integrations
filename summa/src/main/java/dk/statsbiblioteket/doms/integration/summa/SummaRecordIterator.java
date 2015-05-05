@@ -144,7 +144,7 @@ class SummaRecordIterator {
             recordDescriptions.add(baseRecordDescription);
         }
 
-        ArrayList<Future<Record>> futureRecordList = new ArrayList<Future<Record>>(recordDescriptions.size());
+        ArrayList<Future<Record>> futureRecordList = new ArrayList<>(recordDescriptions.size());
         for (final BaseRecordDescription recordDescription : recordDescriptions) {
             Future<Record> futureRecord = threadPool.submit(new Callable<Record>() {
                 @Override
