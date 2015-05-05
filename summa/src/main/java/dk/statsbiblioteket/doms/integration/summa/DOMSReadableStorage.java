@@ -145,7 +145,6 @@ public class DOMSReadableStorage implements Storage {
                 return thread;
             }
         };
-        //If thread count not correctly specified, make a cached thread pool (creates up to infinity threads as required, and kills them after 60 seconds of idle)
         if (viewBundleThreadCount == null || viewBundleThreadCount <= 0) {
             return Executors.newSingleThreadExecutor(threadFactory);
         } else {

@@ -146,10 +146,21 @@ class SummaRecordIterator {
 
         ArrayList<Future<Record>> futureRecordList = new ArrayList<>(recordDescriptions.size());
         for (final BaseRecordDescription recordDescription : recordDescriptions) {
+            log.debug("Submitting '" + recordDescription.getRecordDescription().getPid() + "' to thread pool");
             Future<Record> futureRecord = threadPool.submit(new Callable<Record>() {
                 @Override
                 public Record call() throws Exception {
-                    return buildRecord(recordDescription,baseConfigurations,domsClient);
+                    final Thread currentThread = Thread.currentThread();
+                    final String oldName = currentThread.getName();
+                    currentThread.setName(oldName+"-" + recordDescription.getRecordDescription().getPid());
+                    try {
+                        log.debug("Executing '" + recordDescription.getRecordDescription().getPid() + "' in thread '" +
+                                  Thread.currentThread().getName());
+                        final Record record = buildRecord(recordDescription, baseConfigurations, domsClient);
+                        return record;
+                    } finally {
+                        currentThread.setName(oldName);
+                    }
                 }
             });
             futureRecordList.add(futureRecord);
