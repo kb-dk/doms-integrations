@@ -352,7 +352,7 @@ public class DOMSReadableStorage implements Storage {
         }
 
         try {
-            final Iterator<Record> recordIterator = recordIterators
+            final SummaRecordIterator recordIterator = recordIterators
                     .get(iteratorKey);
 
             log.debug("next(long): Returning next element for iterator key: "
