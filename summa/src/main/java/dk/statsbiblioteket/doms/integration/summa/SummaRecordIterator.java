@@ -98,7 +98,7 @@ class SummaRecordIterator {
      *             error.
      * @see java.util.Iterator#hasNext()
      */
-    public boolean hasNext() throws DOMSCommunicationError {
+    public synchronized boolean hasNext() throws DOMSCommunicationError {
         if (log.isTraceEnabled()) {
             log.trace("hasNext(): Entering.");
         }
@@ -120,7 +120,7 @@ class SummaRecordIterator {
      *             error.
      * @see java.util.Iterator#next()
      */
-    public Record next() {
+    public synchronized Record next() {
         final List<Record> next = next(1, Long.MAX_VALUE);
         if (next.isEmpty()){
             throw new NoSuchElementException("Iterator is out of records");
@@ -137,7 +137,7 @@ class SummaRecordIterator {
      *
      * @return a list, possible of length 0
      */
-    public List<Record> next(int maxResults, long maxSizePerRetrieval) {
+    public synchronized List<Record> next(int maxResults, long maxSizePerRetrieval) {
         ArrayList<BaseRecordDescription> recordDescriptions = new ArrayList<>();
         for (int i = 0; i < maxResults && hasNext(); i++) {
             final BaseRecordDescription baseRecordDescription = getNextBaseRecordDescription();
@@ -149,7 +149,7 @@ class SummaRecordIterator {
             Future<Record> futureRecord = threadPool.submit(new Callable<Record>() {
                 @Override
                 public Record call() throws Exception {
-                    return buildRecord(recordDescription);
+                    return buildRecord(recordDescription,baseConfigurations,domsClient);
                 }
             });
             futureRecordList.add(futureRecord);
@@ -191,7 +191,7 @@ class SummaRecordIterator {
      *         <code>baseRecordDescriptions</code> containing the
      *         <code>RecordDescription</code> with the lowest time-stamp.
      */
-    private BaseRecordDescription getNextBaseRecordDescription() {
+    private synchronized BaseRecordDescription getNextBaseRecordDescription() {
 
         if (log.isTraceEnabled()) {
             log.trace("getNextBaseRecordDescription(): Entering.");
@@ -226,12 +226,14 @@ class SummaRecordIterator {
      * This method enables the iterator to undo a next() operation if it fails
      * to build a <code>Record</code> due to communication/server errors.
      *
+     * This methods is not guaranteed to be thread safe, but it should not be required
+     *
      * @param baseRecordDescription
      *            the <code>BaseRecordDescription</code> in
      *            <code>baseRecordDescriptions</code> containing the
      *            <code>RecordDescription</code> with the lowest time-stamp.
      */
-    private void pushBackBaseRecordDescription(
+    private synchronized void pushBackBaseRecordDescription(
             BaseRecordDescription baseRecordDescription) {
 
         if (log.isTraceEnabled()) {
@@ -272,7 +274,7 @@ class SummaRecordIterator {
      * @return a <code>Map</code> which associates each of the base IDs from
      *         <code>baseIDs</code> with a <code>BaseState</code> instance.
      */
-    private Map<String, BaseState> createBaseStatesMap(Set<String> baseIDs) {
+    private synchronized Map<String, BaseState> createBaseStatesMap(Set<String> baseIDs) {
         if (log.isTraceEnabled()) {
             log.trace("createBaseStatesMap(Set<String>): Entering.");
         }
@@ -302,7 +304,7 @@ class SummaRecordIterator {
      *             if any problems are encountered while retriving
      *             <code>RecordDescription</code> instances from the DOMS.
      */
-    private void fillCache() throws DOMSCommunicationError {
+    private synchronized void fillCache() throws DOMSCommunicationError {
 
         if (log.isTraceEnabled()) {
             log.trace("fillCache(): Entering.");
@@ -337,7 +339,7 @@ class SummaRecordIterator {
      *             if the operation fails due to a communication or server
      *             error.
      */
-    private void fetchBaseRecordDescriptions(String summaBaseID, Iterator<String> iterator)
+    private synchronized void fetchBaseRecordDescriptions(String summaBaseID, Iterator<String> iterator)
             throws DOMSCommunicationError {
 
         if (log.isTraceEnabled()) {
@@ -441,9 +443,9 @@ class SummaRecordIterator {
      *             if the retrieval fails due to a communication or server
      *             error.
      */
-    private List<RecordDescription> retrieveRecordDescriptions(
+    private synchronized List<RecordDescription> retrieveRecordDescriptions(
             String collectionPIDString, String viewID, String objectState,
-            long startTimeStamp, long recordCountPerRetrieval) throws DOMSCommunicationError {
+            long startTimeStamp, int recordCountPerRetrieval) throws DOMSCommunicationError {
 
         try {
             return domsClient.getModifiedEntryObjects(collectionPIDString,
@@ -480,7 +482,10 @@ class SummaRecordIterator {
      * @return a Summa Storage <code>Record</code> instance built from the
      *         information provided by </code>baseRecordDescription</code>.
      */
-    private Record buildRecord(BaseRecordDescription baseRecordDescription)
+    private Record buildRecord(BaseRecordDescription baseRecordDescription,
+                                final Map<String, BaseDOMSConfiguration> baseConfigurations,
+                                final DomsWSClient domsClient
+                              )
             throws ServerOperationFailed {
 
         if (log.isTraceEnabled()) {
@@ -537,7 +542,7 @@ class SummaRecordIterator {
         }
     }
 
-    BaseRecordDescription getCurrentBaseRecordDescription() {
+    public synchronized BaseRecordDescription getCurrentBaseRecordDescription() {
         return baseRecordDescriptions.peek();
     }
 
