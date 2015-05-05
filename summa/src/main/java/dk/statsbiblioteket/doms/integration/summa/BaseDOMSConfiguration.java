@@ -110,7 +110,7 @@ public class BaseDOMSConfiguration {
      *
      * @return The number of records to retrieve.
      */
-    public long getRecordCountPerRetrieval() {
+    public int getRecordCountPerRetrieval() {
         return recordCountPerRetrieval;
     }
 
