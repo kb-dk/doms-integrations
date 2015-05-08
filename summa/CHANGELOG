@@ -1,3 +1,14 @@
+1.1
+Use newest version of client lib, supports talking to new update tracker
+Respect deleted records
+Multithreded fetching of objects from DOMS
+New configuration value sets the number of simultaneous threads (see also example config)
+         <entry>
+           <key>DomsRetrievalThreadCount</key>
+           <value class="int">4</value>
+         </entry>
+
+
 1.0
 Updated to 1.0 doms parent pom
 Updated to 1.0 doms client
