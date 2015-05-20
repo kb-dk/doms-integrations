@@ -529,7 +529,7 @@ class SummaRecordIterator {
                 newRecord = new Record(recordID, summaBaseID, new byte[0]);
                 newRecord.setDeleted(true);
             } else {
-                final byte recordData[] = domsClient.getViewBundle(modifiedEntryObjectPIDString, viewID).getBytes();
+                final byte recordData[] = domsClient.getViewBundleFromSpecificTime(modifiedEntryObjectPIDString, viewID, recordDescription.getRecorddate()).getBytes();
                 newRecord = new Record(recordID, summaBaseID, recordData);
             }
             newRecord.setModificationTime(recordDescription.getDate());

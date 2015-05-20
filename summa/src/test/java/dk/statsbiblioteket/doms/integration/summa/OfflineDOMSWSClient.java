@@ -57,6 +57,12 @@ public class OfflineDOMSWSClient implements DomsWSClient {
     }
 
     @Override
+    public String getViewBundleFromSpecificTime(String entryObjectPID, String viewID, long time)
+            throws ServerOperationFailed {
+        return viewID+":"+entryObjectPID;
+    }
+
+    @Override
     public void setObjectLabel(String objectPID, String objectLabel, String comment) throws ServerOperationFailed {
     }
 
