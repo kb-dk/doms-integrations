@@ -8,14 +8,14 @@
 
     <groupId>dk.statsbiblioteket.doms.summa</groupId>
     <artifactId>summa</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2</version>
     <packaging>pom</packaging>
 
     <scm>
         <connection>scm:git:git://github.com/statsbiblioteket/doms-integrations.git</connection>
         <developerConnection>scm:git:git@github.com:statsbiblioteket/doms-integrations.git</developerConnection>
         <url>https://github.com/statsbiblioteket/doms-integrations</url>
-      <tag>HEAD</tag>
+      <tag>summa-1.2</tag>
   </scm>
 
     <!-- TODO make Summa release to sbforge.org -->
@@ -37,7 +37,7 @@
             <dependency>
                 <groupId>dk.statsbiblioteket.doms.client</groupId>
                 <artifactId>domsClient</artifactId>
-                <version>1.3-SNAPSHOT</version>
+                <version>1.3</version>
             </dependency>
             <dependency>
                 <groupId>dk.statsbiblioteket.summa</groupId>
