@@ -1,3 +1,7 @@
+1.2
+Use correct timestamp for getting changed records
+Use correct timestamp for getting records when iterating
+
 1.1
 Use newest version of client lib, supports talking to new update tracker
 Respect deleted records
